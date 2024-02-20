@@ -1,0 +1,101 @@
+﻿@page "/Account/Manage/TwoFactorAuthentication"
+
+@using Microsoft.AspNetCore.Http.Features
+@using Microsoft.AspNetCore.Identity
+@using Manufacture.Infrastructure.Data
+
+@inject UserManager<User> UserManager
+@inject SignInManager<User> SignInManager
+@inject IdentityUserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Two-factor authentication (2FA)</PageTitle>
+
+<StatusMessage/>
+<h3>Two-factor authentication (2FA)</h3>
+@if (canTrack)
+{
+    if (is2faEnabled)
+    {
+        if (recoveryCodesLeft == 0)
+        {
+            <div class="alert alert-danger">
+                <strong>У вас осталось 0 попыток получить код восстановления.</strong>
+                <p>Вы должны <a href="Account/Manage/GenerateRecoveryCodes">сгенерируйте новый набор кодов восстановления</a>, прежде чем вы сможете войти в систему с кодом восстановления.</p>
+            </div>
+        }
+        else if (recoveryCodesLeft == 1)
+        {
+            <div class="alert alert-danger">
+                <strong>У вас осталась 1 попытка получить код восстановления.</strong>
+                <p>Вы можете <a href="Account/Manage/GenerateRecoveryCodes">generate a new set of recovery codes</a>.</p>
+            </div>
+        }
+        else if (recoveryCodesLeft <= 3)
+        {
+            <div class="alert alert-warning">
+                <strong>У вас осталось @recoveryCodesLeft попыток получить код восстановления.</strong>
+                <p>Вы должны <a href="Account/Manage/GenerateRecoveryCodes">сгенерировать новый набор кодов восстановления</a>.</p>
+            </div>
+        }
+
+        if (isMachineRemembered)
+        {
+            <form style="display: inline-block" @formname="forget-browser" @onsubmit="OnSubmitForgetBrowserAsync" method="post">
+                <AntiforgeryToken/>
+                <button type="submit" class="btn btn-primary">Забыть это устройство.</button>
+            </form>
+        }
+
+        <a href="Account/Manage/Disable2fa" class="btn btn-primary">Выключить 2-ух факторную аутентификацию</a>
+        <a href="Account/Manage/GenerateRecoveryCodes" class="btn btn-primary">Сбросить коды восстановления</a>
+    }
+
+    <h4>Authenticator app</h4>
+    @if (!hasAuthenticator)
+    {
+        <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary">Добавить приложение аутентификатор</a>
+    }
+    else
+    {
+        <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary">Настройте приложение для аутентификации</a>
+        <a href="Account/Manage/ResetAuthenticator" class="btn btn-primary">Сбросить приложение аутентификации</a>
+    }
+}
+else
+{
+    <div class="alert alert-danger">
+        <strong>Политика конфиденциальности и использования файлов cookie не приняты.</strong>
+        <p>Вы должны принять политику, прежде чем сможете включить двухфакторную аутентификацию.</p>
+    </div>
+}
+
+@code {
+    private bool canTrack;
+    private bool hasAuthenticator;
+    private int recoveryCodesLeft;
+    private bool is2faEnabled;
+    private bool isMachineRemembered;
+
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        canTrack = HttpContext.Features.Get<ITrackingConsentFeature>()?.CanTrack ?? true;
+        hasAuthenticator = await UserManager.GetAuthenticatorKeyAsync(user) is not null;
+        is2faEnabled = await UserManager.GetTwoFactorEnabledAsync(user);
+        isMachineRemembered = await SignInManager.IsTwoFactorClientRememberedAsync(user);
+        recoveryCodesLeft = await UserManager.CountRecoveryCodesAsync(user);
+    }
+
+    private async Task OnSubmitForgetBrowserAsync()
+    {
+        await SignInManager.ForgetTwoFactorClientAsync();
+
+        RedirectManager.RedirectToCurrentPageWithStatus(
+            "Текущий браузер был забыт. Когда вы снова войдете в систему из этого браузера, вам будет предложено ввести код 2fa.",
+            HttpContext);
+    }
+
+}

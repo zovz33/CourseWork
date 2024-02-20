@@ -1,0 +1,100 @@
+﻿@page "/Account/LoginWith2fa"
+
+@using System.ComponentModel.DataAnnotations
+@using Manufacture.Core.Entities.Identity
+@using Microsoft.AspNetCore.Identity
+@using Manufacture.Infrastructure.Data
+
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@inject IdentityRedirectManager RedirectManager
+@inject ILogger<LoginWith2fa> Logger
+
+<PageTitle>Двухфакторная аутентификация</PageTitle>
+
+<h1>Двухфакторная аутентификация</h1>
+<hr/>
+<StatusMessage Message="@message"/>
+<p>Ваш логин защищен приложением-аутентификатором. Введите код аутентификатора ниже.</p>
+<div class="row">
+    <div class="col-md-4">
+        <EditForm Model="Input" FormName="login-with-2fa" OnValidSubmit="OnValidSubmitAsync" method="post">
+            <input type="hidden" name="ReturnUrl" value="@ReturnUrl"/>
+            <input type="hidden" name="RememberMe" value="@RememberMe"/>
+            <DataAnnotationsValidator/>
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.TwoFactorCode" class="form-control" autocomplete="off"/>
+                <label for="two-factor-code" class="form-label">Код с аунтефикатора</label>
+                <ValidationMessage For="() => Input.TwoFactorCode" class="text-danger"/>
+            </div>
+            <div class="checkbox mb-3">
+                <label for="remember-machine" class="form-label">
+                    <InputCheckbox @bind-Value="Input.RememberMachine"/>
+                    Запомнить это устройство
+                </label>
+            </div>
+            <div>
+                <button type="submit" class="w-100 btn btn-lg btn-primary">Войти</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+<p>
+    У вас нет доступа к аунтефицированному устройству? Ты можешь
+    <a href="Account/LoginWithRecoveryCode?ReturnUrl=@ReturnUrl">Войти с помощью кода восстановления</a>.
+</p>
+
+@code {
+    private string? message;
+    private User user = default!;
+
+    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromQuery] private bool RememberMe { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Ensure the user has gone through the username & password screen first
+        user = await SignInManager.GetTwoFactorAuthenticationUserAsync() ??
+               throw new InvalidOperationException("Невозможно загрузить пользователя двухфакторной аутентификации..");
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        var authenticatorCode = Input.TwoFactorCode!.Replace(" ", string.Empty).Replace("-", string.Empty);
+        var result = await SignInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, RememberMe, Input.RememberMachine);
+        var userId = await UserManager.GetUserIdAsync(user);
+
+        if (result.Succeeded)
+        {
+            Logger.LogInformation("Пользователь с ID '{UserId}' вошел двухфакторным способом.", userId);
+            RedirectManager.RedirectTo(ReturnUrl);
+        }
+        else if (result.IsLockedOut)
+        {
+            Logger.LogWarning("Пользователь с ID '{UserId}' попытался войти в заблокированный аккаунт.", userId);
+            RedirectManager.RedirectTo("Account/Lockout");
+        }
+        else
+        {
+            Logger.LogWarning("Введен неправильный код аутентификатора у пользователя с ID '{UserId}'.", userId);
+            message = "Ошибка: неправильный код аутентификатора.";
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [StringLength(7, ErrorMessage = "Длина {0} должна быть не менее {2} и не более {1} символов.", MinimumLength = 6)]
+        [DataType(DataType.Text)]
+        [Display(Name = "Код аутентификатора")]
+        public string? TwoFactorCode { get; set; }
+
+        [Display(Name = "Запомнить это устройство")]
+        public bool RememberMachine { get; set; }
+    }
+
+}

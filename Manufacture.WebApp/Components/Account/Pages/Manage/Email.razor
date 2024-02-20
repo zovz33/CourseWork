@@ -1,0 +1,124 @@
+﻿@page "/Account/Manage/Email"
+
+@using System.ComponentModel.DataAnnotations
+@using System.Text
+@using System.Text.Encodings.Web
+@using Manufacture.Core.Entities.Identity
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using Manufacture.Infrastructure.Data
+
+@inject UserManager<User> UserManager
+@inject IEmailSender<User> EmailSender
+@inject IdentityUserAccessor UserAccessor
+@inject NavigationManager NavigationManager
+
+<PageTitle>Управление почтой</PageTitle>
+
+<h3>Управление почтой</h3>
+
+<StatusMessage Message="@message"/>
+<div class="row">
+    <div class="col-md-6">
+        <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post">
+            <AntiforgeryToken/>
+        </form>
+        <EditForm Model="Input" FormName="change-email" OnValidSubmit="OnValidSubmitAsync" method="post">
+            <DataAnnotationsValidator/>
+            <ValidationSummary class="text-danger" role="alert"/>
+            @if (isEmailConfirmed)
+            {
+                <div class="form-floating mb-3 input-group">
+                    <input type="text" value="@email" class="form-control" placeholder="Введите вашу почту." disabled/>
+                    <div class="input-group-append">
+                        <span class="h-100 input-group-text text-success font-weight-bold">✓</span>
+                    </div>
+                    <label for="email" class="form-label">Текущая почта</label>
+                </div>
+            }
+            else
+            {
+                <div class="form-floating mb-3">
+                    <input type="text" value="@email" class="form-control" placeholder="Введите вашу почту." disabled/>
+                    <label for="email" class="form-label">Текущая почта</label>
+                    <button type="submit" class="btn btn-link" form="send-verification-form">Отправить письмо с подтверждением</button>
+                </div>
+            }
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Пожалуйста, введите вашу почту."/>
+                <label for="new-email" class="form-label">Новая почта</label>
+                <ValidationMessage For="() => Input.NewEmail" class="text-danger"/>
+            </div>
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Изменить почту</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private string? message;
+    private User user = default!;
+    private string? email;
+    private bool isEmailConfirmed;
+
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm(FormName = "change-email")]
+    private InputModel Input { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        email = await UserManager.GetEmailAsync(user);
+        isEmailConfirmed = await UserManager.IsEmailConfirmedAsync(user);
+
+        Input.NewEmail ??= email;
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        if (Input.NewEmail is null || Input.NewEmail == email)
+        {
+            message = "Ваш адрес электронной почты не изменился.";
+            return;
+        }
+
+        var userId = await UserManager.GetUserIdAsync(user);
+        var code = await UserManager.GenerateChangeEmailTokenAsync(user, Input.NewEmail);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+            NavigationManager.ToAbsoluteUri("Account/ConfirmEmailChange").AbsoluteUri,
+            new Dictionary<string, object?> { ["userId"] = userId, ["email"] = Input.NewEmail, ["code"] = code });
+
+        await EmailSender.SendConfirmationLinkAsync(user, Input.NewEmail, HtmlEncoder.Default.Encode(callbackUrl));
+
+        message = "Ссылка с подтверждением для смены почты выслана. Пожалуйста, проверьте свою почту.";
+    }
+
+    private async Task OnSendEmailVerificationAsync()
+    {
+        if (email is null)
+        {
+            return;
+        }
+
+        var userId = await UserManager.GetUserIdAsync(user);
+        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
+
+        await EmailSender.SendConfirmationLinkAsync(user, email, HtmlEncoder.Default.Encode(callbackUrl));
+
+        message = "Письмо выслано. Пожалуйста, проверьте почту.";
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Новая почта")]
+        public string? NewEmail { get; set; }
+    }
+
+}

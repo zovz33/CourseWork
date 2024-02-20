@@ -1,0 +1,14 @@
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.Core\bin\Release\net8.0\Manufacture.Core.deps.json
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.Core\bin\Release\net8.0\Manufacture.Core.runtimeconfig.json
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.Core\bin\Release\net8.0\Manufacture.Core.dll
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.Core\bin\Release\net8.0\Manufacture.Core.pdb
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.Core\obj\Release\net8.0\Manufacture.Core.csproj.AssemblyReference.cache
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.Core\obj\Release\net8.0\Manufacture.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.Core\obj\Release\net8.0\Manufacture.Core.AssemblyInfoInputs.cache
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.Core\obj\Release\net8.0\Manufacture.Core.AssemblyInfo.cs
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.Core\obj\Release\net8.0\Manufacture.Core.csproj.CoreCompileInputs.cache
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.Core\obj\Release\net8.0\Manufacture.Core.dll
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.Core\obj\Release\net8.0\refint\Manufacture.Core.dll
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.Core\obj\Release\net8.0\Manufacture.Core.pdb
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.Core\obj\Release\net8.0\Manufacture.Core.genruntimeconfig.cache
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.Core\obj\Release\net8.0\ref\Manufacture.Core.dll

@@ -1,0 +1,87 @@
+﻿@page "/Account/ConfirmEmail"
+@using System.Text
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@inject ILogger<Login> Logger
+@inject UserManager<User> UserManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Подтверждение почты</PageTitle>
+
+<h1>Подтверждение почты</h1>
+<StatusMessage Message="@statusMessage"/>
+        @* <button @onclick="AuthorizeUser" class="w-100 btn btn-lg btn-primary">Авторизоваться</button> *@
+
+@inject SignInManager<User> SignInManager
+@inject NavigationManager NavigationManager
+@code {
+    private string? statusMessage;
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromQuery] private string? UserId { get; set; } 
+    [SupplyParameterFromQuery] private string? Code { get; set; }
+    [SupplyParameterFromQuery] private string? InputPassword { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (UserId is null || Code is null)
+        {
+            RedirectManager.RedirectTo("");
+        }
+        
+        var user = await UserManager.FindByIdAsync(UserId);
+        if (user is null)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            statusMessage = $"Ошибка загрузки пользователя с ID {UserId}";
+        }
+        else
+        {
+            var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
+            
+            var result = await UserManager.ConfirmEmailAsync(user, code);
+            statusMessage = result.Succeeded ? "Почта успешно подтверждена. Авторизируем вас..." : "Ошибка при подтверждении почты.";
+            Logger.LogInformation(statusMessage);
+            if (result.Succeeded)
+            {
+                statusMessage = "Почта успешно подтверждена. Авторизируем вас...";
+
+                var resultUser = await SignInManager.PasswordSignInAsync(user, InputPassword, false, false);
+                if (resultUser.Succeeded)
+                {
+                    Logger.LogInformation("Пользователь: " + user.Email + "успешно авторизован после регистрации.");
+                    RedirectManager.RedirectTo("/");
+                }
+                else
+                {
+                    Logger.LogError("Ошибка аутентификации пользователя.");
+                    statusMessage = "Ошибка аутентификации пользователя.";
+                }
+            }
+            else
+            {
+                statusMessage = "Ошибка при подтверждении почты.";
+            }
+        }
+        
+    }
+    
+    // async Task AuthorizeUser()
+    // {
+    //     var user = await UserManager.FindByIdAsync(UserId);
+    //     // Logger.LogInformation("Авторизация после регистрации: " + user.Email + " Pass: "+ InputPassword);
+    //
+    //     var resultUser = await SignInManager.PasswordSignInAsync(user, InputPassword, false, false);
+    //     if (resultUser.Succeeded)
+    //     {
+    //         Logger.LogInformation("Пользователь: "+ user.Email + "успешно авторизован после регистрации.");
+    //         RedirectManager.RedirectTo("/");
+    //     }
+    //     else
+    //     {
+    //         Logger.LogError("Ошибка аутентификации пользователя.");
+    //         statusMessage = "Ошибка аутентификации пользователя."; 
+    //     }
+    // }
+    
+}

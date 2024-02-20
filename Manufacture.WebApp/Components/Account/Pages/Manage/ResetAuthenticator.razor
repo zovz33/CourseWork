@@ -1,0 +1,52 @@
+﻿@page "/Account/Manage/ResetAuthenticator"
+
+@using Microsoft.AspNetCore.Identity
+@using Manufacture.Infrastructure.Data
+
+@inject UserManager<User> UserManager
+@inject SignInManager<User> SignInManager
+@inject IdentityUserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+@inject ILogger<ResetAuthenticator> Logger
+
+<PageTitle>Reset authenticator key</PageTitle>
+
+<StatusMessage/>
+<h3>Reset authenticator key</h3>
+<div class="alert alert-warning" role="alert">
+    <p>
+        <span class="glyphicon glyphicon-warning-sign"></span>
+        <strong>Если вы сбросите ключ аутентификатора, ваше приложение аутентификатора не будет работать, пока вы не переконфигурируете его.</strong>
+    </p>
+    <p>
+        Этот процесс отключает 2FA, пока вы не подтвердите свое приложение для проверки подлинности.
+        Если вы не завершите настройку приложения для аутентификации, вы можете потерять доступ к своей учетной записи.
+    </p>
+</div>
+<div>
+    <form @formname="reset-authenticator" @onsubmit="OnSubmitAsync" method="post">
+        <AntiforgeryToken/>
+        <button class="btn btn-danger" type="submit">Сбросить ключ аутентификации</button>
+    </form>
+</div>
+
+@code {
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    private async Task OnSubmitAsync()
+    {
+        var user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        await UserManager.SetTwoFactorEnabledAsync(user, false);
+        await UserManager.ResetAuthenticatorKeyAsync(user);
+        var userId = await UserManager.GetUserIdAsync(user);
+        Logger.LogInformation("Пользователь с идентификатором '{UserId}' сбросил ключ приложения для аутентификации.", userId);
+
+        await SignInManager.RefreshSignInAsync(user);
+
+        RedirectManager.RedirectToWithStatus(
+            "Account/Manage/EnableAuthenticator",
+            "Ключ вашего приложения для аутентификации был сброшен, вам нужно будет настроить приложение для аутентификации, используя новый ключ.",
+            HttpContext);
+    }
+
+}

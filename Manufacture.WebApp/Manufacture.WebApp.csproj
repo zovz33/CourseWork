@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>aspnet-Manufacture.WebApp-119369d1-2d00-4aac-a050-706dc0f5b417</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="wwwroot\app.css"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0"/>
+        <PackageReference Include="Radzen.Blazor" Version="4.24.6" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Manufacture.Infrastructure\Manufacture.Infrastructure.csproj"/>
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,98 @@
+@using Manufacture.Core.Entities.Identity 
+<div>
+    <dialog id="my-dialog" @onclose="OnClose" style="border:5px solid #0b5ed7; min-width:300px;">
+        @if (ShowMainContent)
+        {
+            <EditForm Model="User" OnValidSubmit="Save">
+                <div class="card">
+                    <div class="card-header"> @Title User</div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label" for="name">Имя пользователя</label>
+                            <InputText id="name" @bind-Value="User.UserName" class="form-control"></InputText>
+                        </div>
+                        <div class="form-group mt-2">
+                            <label class="form-label" for="amount">Пароль</label>
+                            <InputText id="amount" @bind-Value="User.PasswordHash" class="form-control"></InputText>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="hstack gap-3 float-end">
+                            <form method="dialog">
+                                <button class="btn btn-danger">Закрыть</button>
+                            </form>
+                            <button class="btn btn-success" type="button" @onclick="Save">Сохранить</button>
+                        </div>
+                    </div>
+                </div>
+            </EditForm>
+        }
+        @if (ShowConfirmationContent)
+        {
+            <div class="card">
+                <div class="card-header">Вы уверены, что хотите это сделать?</div>
+                <div class="card-body">
+                    <div class="hstack gap-2">
+                        <form method="dialog">
+                            <button class="btn btn-danger" @onclick="() => ConfirmDelete(true)">Да</button>
+                            <button class="btn btn-primary">Нет</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </dialog>
+</div>
+
+@code {
+    private bool ShowMainContent { get; set; } = true;
+    private bool ShowConfirmationContent { get; set; } = false;
+    public string Title { get; set; } = "Добавить";
+    [Parameter] public User User { get; set; } = new();
+    [Parameter] public EventCallback<User> HandleAddUserEvent { get; set; }
+
+    void OnClose(EventArgs e)
+    {
+    }
+
+    async Task Save()
+    {
+        if (User!.UserName is null) return;
+        await HandleAddUserEvent.InvokeAsync(User);
+    }
+
+    public void ClearUserContainer()
+    {
+        User = new();
+    }
+
+    public void ChangeTitle(string title)
+    {
+        Title = title;
+    }
+
+    // Confirm Delete User
+    public void ShowConfirmDialog()
+    {
+        ShowMainContent = false;
+        ShowConfirmationContent = true;
+    }
+
+    [Parameter] public EventCallback HandleConfirmDeleteEvent { get; set; }
+
+    private async void ConfirmDelete(bool response)
+    {
+        if (response)
+        {
+            await HandleConfirmDeleteEvent.InvokeAsync();
+            ShowConfirmDialog();
+        }
+    }
+
+    public void LoadDefault()
+    {
+        ShowMainContent = true;
+        ShowConfirmationContent = false;
+    }
+}
+

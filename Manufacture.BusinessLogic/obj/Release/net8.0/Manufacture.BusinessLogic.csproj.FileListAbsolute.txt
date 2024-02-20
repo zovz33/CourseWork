@@ -1,0 +1,15 @@
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.BusinessLogic\bin\Release\net8.0\Manufacture.BusinessLogic.deps.json
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.BusinessLogic\bin\Release\net8.0\Manufacture.BusinessLogic.dll
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.BusinessLogic\bin\Release\net8.0\Manufacture.BusinessLogic.pdb
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.BusinessLogic\bin\Release\net8.0\Manufacture.Core.dll
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.BusinessLogic\bin\Release\net8.0\Manufacture.Core.pdb
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.BusinessLogic\obj\Release\net8.0\Manufacture.BusinessLogic.csproj.AssemblyReference.cache
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.BusinessLogic\obj\Release\net8.0\Manufacture.BusinessLogic.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.BusinessLogic\obj\Release\net8.0\Manufacture.BusinessLogic.AssemblyInfoInputs.cache
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.BusinessLogic\obj\Release\net8.0\Manufacture.BusinessLogic.AssemblyInfo.cs
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.BusinessLogic\obj\Release\net8.0\Manufacture.BusinessLogic.csproj.CoreCompileInputs.cache
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.BusinessLogic\obj\Release\net8.0\Manufacture.BusinessLogic.csproj.CopyComplete
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.BusinessLogic\obj\Release\net8.0\Manufacture.BusinessLogic.dll
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.BusinessLogic\obj\Release\net8.0\refint\Manufacture.BusinessLogic.dll
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.BusinessLogic\obj\Release\net8.0\Manufacture.BusinessLogic.pdb
+C:\Users\User\source\repos\ASPNETCoreBlazorWeb\Manufacture.BusinessLogic\obj\Release\net8.0\ref\Manufacture.BusinessLogic.dll

@@ -1,0 +1,45 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\Projects\\dotnet\\ASPNETCoreBlazorWeb\\Manufacture.WebApp\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\Manufacture.WebApp.bundle.scp.css",
+      "PackagePath": "staticwebassets\\Manufacture.WebApp.bundle.scp.css"
+    },
+    {
+      "Id": "D:\\Projects\\dotnet\\ASPNETCoreBlazorWeb\\Manufacture.WebApp\\wwwroot\\app.css",
+      "PackagePath": "staticwebassets\\app.css"
+    },
+    {
+      "Id": "D:\\Projects\\dotnet\\ASPNETCoreBlazorWeb\\Manufacture.WebApp\\wwwroot\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "D:\\Projects\\dotnet\\ASPNETCoreBlazorWeb\\Manufacture.WebApp\\wwwroot\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "D:\\Projects\\dotnet\\ASPNETCoreBlazorWeb\\Manufacture.WebApp\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "D:\\Projects\\dotnet\\ASPNETCoreBlazorWeb\\Manufacture.WebApp\\wwwroot\\js\\dialog.js",
+      "PackagePath": "staticwebassets\\js\\dialog.js"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.Manufacture.WebApp.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.Manufacture.WebApp.props",
+      "PackagePath": "build\\Manufacture.WebApp.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.Manufacture.WebApp.props",
+      "PackagePath": "buildMultiTargeting\\Manufacture.WebApp.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.Manufacture.WebApp.props",
+      "PackagePath": "buildTransitive\\Manufacture.WebApp.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
