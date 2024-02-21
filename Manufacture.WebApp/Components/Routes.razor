@@ -1,5 +1,6 @@
 ﻿@using Manufacture.WebApp.Components.Account.Shared
 @using Manufacture.WebApp.Components.Pages.Errors
+
 <Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
@@ -10,6 +11,7 @@
         <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
     </Found>
     <NotFound>
-        <Not-Found/>
+        <Not-Found></Not-Found>
     </NotFound>
+    
 </Router>

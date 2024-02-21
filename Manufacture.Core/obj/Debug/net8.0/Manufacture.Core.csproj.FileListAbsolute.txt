@@ -26,3 +26,4 @@ D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.Core\obj\Debug\net8.0\refint\
 D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.Core\obj\Debug\net8.0\Manufacture.Core.pdb
 D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.Core\obj\Debug\net8.0\Manufacture.Core.genruntimeconfig.cache
 D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.Core\obj\Debug\net8.0\ref\Manufacture.Core.dll
+D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.Core\obj\Debug\net8.0\Manufacture.Core.sourcelink.json

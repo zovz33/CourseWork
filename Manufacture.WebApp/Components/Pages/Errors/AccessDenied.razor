@@ -1,0 +1,37 @@
+@page "/AccessDenied"
+@using Microsoft.AspNetCore.Http.Extensions
+@using System.Web
+@using System.Globalization
+@inject NavigationManager NavigationManager
+<AuthorizeView>
+    <NotAuthorized>
+        <p>Вы не авторизованы, поэтому у вас нет доступа к странице @PageName.</p>
+        @* <p>Права, нужные для просмотра страницы @PageName: @RequiredPermission</p> *@
+        <a href="/" class="w-100 btn btn-lg btn-primary">Авторизоваться</a>
+    </NotAuthorized>
+    <Authorized>
+        <h3>@context.User.Identity?.Name, доступ к странице @PageName запрещен</h3>
+        <p>У вас нет необходимых разрешений для просмотра этой страницы.</p>
+        @* <p>Права, нужные для просмотра страницы: @RequiredPermission</p> *@
+        <a href="/" class="w-100 btn btn-lg btn-primary">Домой</a>
+    </Authorized>
+</AuthorizeView>
+
+
+@code {
+    [Parameter] public string RequiredPermission { get; set; }
+
+    [Parameter] public string PageName { get; set; }
+ 
+    protected override void OnInitialized()
+    {
+        var uri = new Uri(NavigationManager.Uri);
+        var returnUrl = HttpUtility.ParseQueryString(uri.Query).Get("ReturnUrl");
+        if (!string.IsNullOrEmpty(returnUrl))
+        {
+            PageName = Path.GetFileName(returnUrl);
+            PageName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(PageName.ToLower());
+        }
+    }
+
+}

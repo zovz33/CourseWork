@@ -49,10 +49,36 @@ namespace Manufacture.WebApp
                     o.SignIn.RequireConfirmedAccount = true;
                     o.User.RequireUniqueEmail = true;
                 })
+                .AddRoles<Role>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddSignInManager()
                 .AddDefaultTokenProviders();
 
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("Permissions10", policy =>
+                    policy.RequireRole("Administrator", "Moderator"));
+                options.AddPolicy("Permissions9", policy =>
+                    policy.RequireRole("Administrator", "Moderator"));
+                options.AddPolicy("Permissions8", policy =>
+                    policy.RequireRole("Administrator", "Moderator"));
+                options.AddPolicy("Permissions7", policy =>
+                    policy.RequireRole("Administrator", "Moderator"));
+                options.AddPolicy("Permissions6", policy =>
+                    policy.RequireRole("Administrator", "Moderator"));
+                options.AddPolicy("Permissions5", policy =>
+                    policy.RequireRole("Administrator", "Moderator"));
+                options.AddPolicy("Permissions4", policy =>
+                    policy.RequireRole("Administrator", "Moderator"));
+                options.AddPolicy("Permissions23", policy =>
+                    policy.RequireRole("Administrator", "Moderator"));
+                options.AddPolicy("Permissions2", policy =>
+                    policy.RequireRole("Administrator", "Moderator"));
+                options.AddPolicy("Permissions1", policy =>
+                    policy.RequireRole("Administrator", "Moderator", "User"));
+            });
+            
             builder.Services.Configure<IdentityOptions>(options =>
             {
                 // Password settings.
@@ -81,12 +107,18 @@ namespace Manufacture.WebApp
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
 
                 options.LoginPath = "/Identity/Account/Login";
-                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+                options.AccessDeniedPath = "/AccessDenied";
                 options.SlidingExpiration = true;
             });
 
 
-            builder.Services.AddRazorPages();
+            builder.Services.AddRazorPages(options =>
+            {
+
+                // options.Conventions.AuthorizePage("/Login", "Permissions1"); // обяз к политике 
+                // docs https://learn.microsoft.com/ru-ru/aspnet/core/security/authorization/razor-pages-authorization?view=aspnetcore-8.0
+            });
+            
             builder.Services.AddRadzenComponents();
 
             var app = builder.Build();
@@ -102,9 +134,11 @@ namespace Manufacture.WebApp
             }
 
             app.UseHttpsRedirection();
-
             app.UseStaticFiles();
             app.UseAntiforgery();
+            
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();

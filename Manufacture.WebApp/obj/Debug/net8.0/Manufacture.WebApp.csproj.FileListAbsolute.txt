@@ -292,3 +292,4 @@ D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\bin\Debug\net8.0\Micro
 D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\bin\Debug\net8.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
 D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\bin\Debug\net8.0\Microsoft.Extensions.Identity.Core.dll
 D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
+D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\obj\Debug\net8.0\Manufacture.WebApp.sourcelink.json
