@@ -9,4 +9,5 @@ public interface IUserService
     Task AddUser(User user, int adminId);
     Task UpdateUser(User user, int id, int adminId);
     Task DeleteUser(int id);
+    Task<string> FindNameById(int? createdById);
 }

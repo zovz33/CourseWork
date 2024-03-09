@@ -41,6 +41,8 @@ namespace Manufacture.Infrastructure.Data
             builder.Entity<IdentityRoleClaim<int>>(entity =>
                 entity.ToTable("RoleClaims"));
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            
+            
         }
     }
 }

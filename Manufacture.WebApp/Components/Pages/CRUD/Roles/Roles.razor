@@ -1,0 +1,121 @@
+﻿@page "/roles"
+
+@using Manufacture.Core.Entities.Identity
+@using Manufacture.BusinessLogic.Interfaces
+@using Manufacture.Infrastructure.Services
+@using Microsoft.AspNetCore.Identity
+@inject RoleManager<Role> RoleManager
+@inject NavigationManager NavigationManager
+@inject IRoleService RoleService; 
+@inject IUserService UserService; 
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@attribute [StreamRendering]
+@* @attribute [Authorize(Policy = "Permissions10")] *@
+<PageTitle>Роли</PageTitle>
+
+<h1>Роли</h1>
+
+@if (RolesL == null)
+{
+    <p>
+        <em>Загрузка...</em>
+    </p>
+}
+else
+{
+    <RadzenButton Icon="add" class="rz-ripple" Click="@(CreateRole)" ButtonStyle="ButtonStyle.Success" Style="margin: 15px"/>
+    <div style="display: flex; flex-direction: column; margin: 16px;max-width: 95rem">
+
+        <RadzenDataGrid Data="@RolesL" TItem="Role" AllowColumnResize="true" GridLines="Radzen.DataGridGridLines.Vertical" 
+                        AllowColumnReorder="false" PagerHorizontalAlign="HorizontalAlign.Center"
+                        AllowPaging="true" AllowFiltering="true" FilterMode="FilterMode.Simple"
+                        FilterPopupRenderMode="PopupRenderMode.OnDemand" IsNullText="-" ColumnWidth="120"
+                        AllowSorting="true" AllowMultiColumnSorting="true" ShowMultiColumnSortingIndex="true" 
+                        Style="width: 100%; margin: 0 15px; max-width: 100%; border-radius: 16px;align-items: center;text-align: center;
+                         ">
+            
+            <Columns>
+                <RadzenDataGridColumn TItem="Role" Frozen="true" Width="80px" Property="Id" Title="#" TextAlign="TextAlign.Center" Sortable="true" Filterable="true"/>
+                <RadzenDataGridColumn TItem="Role" Context="role" Sortable="false" Filterable="false" Frozen="true" Width="120px" FrozenPosition="FrozenColumnPosition.Right">
+                    <Template>
+                        <RadzenButton Icon="edit" class="rz-ripple" Click="@(() => UpdateRole(role.Id))" ButtonStyle="ButtonStyle.Primary" Style="margin-right: 8px;"></RadzenButton>
+                        <RadzenButton Icon="delete" class="rz-ripple" Click="@(() => DeleteRole(role.Id))" ButtonStyle="ButtonStyle.Danger"></RadzenButton>
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="Role" Property="Name" Title="Название" Sortable="true">
+                    <FooterTemplate>
+                        Всего ролей: <b>@RolesL.Count()</b>
+                    </FooterTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Role" Property="Description" Title="Описание" Sortable="true"/>
+
+                <RadzenDataGridColumn TItem="Role" Title="Создание" Sortable="false" Filterable="false">
+                    <Template Context="role">
+                        <RadzenText TextStyle="TextStyle.Subtitle2" class="mb-0">
+                           @CreatedByNames[role.CreatedBy.Value]
+                        </RadzenText>
+                        <RadzenText TextStyle="TextStyle.Caption">@role.CreatedDateTime</RadzenText>
+                    </Template>
+                    <FooterTemplate>
+                        Последнее:<b>@String.Format("{0:d}", RolesL.OrderByDescending(o => o.CreatedDateTime).FirstOrDefault()?.CreatedDateTime)</b>
+                    </FooterTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Role" Title="Редактирование" Sortable="false" Filterable="false">
+                    <Template Context="role">
+                        <RadzenText TextStyle="TextStyle.Subtitle2" class="mb-0">
+                            @UpdatedByNames[role.UpdatedBy.Value]
+                        </RadzenText>
+                        <RadzenText TextStyle="TextStyle.Caption">@role.UpdatedDateTime</RadzenText>
+                    </Template>
+                    <FooterTemplate>
+                        Последнее:<b>@String.Format("{0:d}", RolesL.OrderByDescending(o => o.UpdatedDateTime).FirstOrDefault()?.UpdatedDateTime)</b>
+                    </FooterTemplate>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+
+    </div>
+}
+
+@code {
+    private List<Role> RolesL;
+    private Dictionary<int, string> CreatedByNames = new Dictionary<int, string>();
+    private Dictionary<int, string> UpdatedByNames = new Dictionary<int, string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        RolesL = await RoleService.GetRoles();
+        foreach (var role in RolesL)
+        {
+            if (role.CreatedBy.HasValue && !CreatedByNames.ContainsKey(role.CreatedBy.Value))
+            {
+                CreatedByNames[role.CreatedBy.Value] = await UserService.FindNameById(role.CreatedBy.Value);
+            }
+
+            if (role.UpdatedBy.HasValue && !UpdatedByNames.ContainsKey(role.UpdatedBy.Value))
+            {
+                UpdatedByNames[role.UpdatedBy.Value] = await UserService.FindNameById(role.UpdatedBy.Value);
+            }
+        }
+    }
+
+    private void CreateRole()
+    {
+        NavigationManager.NavigateTo("/role/create");
+    }
+
+    private void UpdateRole(int id)
+    {
+        NavigationManager.NavigateTo($"/role/update/{id}");
+    }
+
+    private async Task DeleteRole(int id)
+    {
+        await RoleService.Delete(id);
+        RolesL = await RoleService.GetRoles();
+    }
+
+
+
+}

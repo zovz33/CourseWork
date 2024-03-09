@@ -1,0 +1,126 @@
+@page "/role/create" 
+@page "/role/update/{id:int?}" 
+@using Manufacture.Core.Entities.Identity
+@using Manufacture.BusinessLogic.Interfaces
+@using System.Security.Claims
+@using Manufacture.Infrastructure.Services
+@using Microsoft.AspNetCore.Identity
+@inject RoleManager<Role> RoleManager
+@inject IRoleService RoleService
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavigationManager
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@if (NavigationManager.Uri.Contains("/role/create"))
+{
+    <PageTitle>Добавьте новую роль</PageTitle>
+    <h3>Добавьте новую роль</h3>
+}
+else if (NavigationManager.Uri.Contains("/role/update/{id:int}"))
+{
+    <PageTitle>Изменение данных у роли @CurrentRole.Name</PageTitle>
+    <h3>Измените роль @CurrentRole.Name</h3>
+}
+<NavLink class="btn " href="/roles">
+    <RadzenIcon Icon="keyboard_backspace" Style=".btn:hover {background-color: bisque;};align-items: center"/>
+</NavLink>
+<RadzenTemplateForm Data="@CurrentRole" Submit="@((Role args) => { Submit(args); })">
+    <RadzenRow Gap="2rem" Class="rz-p-0 rz-p-lg-4">
+        <RadzenColumn Size="12" SizeMD="6">
+            <RadzenStack>
+                <RadzenFieldset Text="Информация о роли">
+                    <RadzenStack Gap="1rem">
+                        <RadzenRow AlignItems="AlignItems.Center">
+                            <div>
+                                <RadzenFormField Text="Название роли" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="lock"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenTextBox id="Name" @bind-Value="CurrentRole.Name"/>
+                                    </ChildContent>
+                                    @* <Helper> *@
+                                    @*     <RadzenRequiredValidator Component="UserName" Text="Имя пользователя обязательно для ввода."/> *@
+                                    @* </Helper> *@
+                                </RadzenFormField>
+                            </div>
+                            <div>
+                                <RadzenFormField Text="Описание" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="description"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenTextBox id="Description" @bind-Value="CurrentRole.Description"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                            </div>
+                            <StatusMessage Message="@Message"/>
+                            <ValidationSummary @bind-Errors="validationErrors"/>
+                        </RadzenRow>
+                    </RadzenStack>
+                </RadzenFieldset>
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" Class="rz-mt-8 rz-mb-4">
+        <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Icon="save" Text="Сохранить"/>
+        <RadzenButton ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Large" Icon="cancel" Text="Отменить" Click="@Cancel"/>
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? id { get; set; }
+
+    public Role CurrentRole { get; set; } = new();
+    public List<string> validationErrors = new List<string>();
+    private string? Message; 
+
+    
+    protected override async Task OnInitializedAsync()
+    {
+        var role = await RoleService.GetRoleById(id);
+        if (id != null)
+            CurrentRole = role;
+    }
+
+    int GetCurrentUserId()
+    {
+        var userIdClaim = HttpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier);
+        Console.WriteLine("ID: " + userIdClaim);
+        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+        {
+            return userId;
+        }
+
+        return 0;
+    }
+    async Task Submit(Role args)
+    {
+        try
+        {
+            int adminId = GetCurrentUserId();
+            if (id is not null)
+            {
+                // maybe nado private method svoy и передавать (int)id
+                await RoleService.Update(CurrentRole, (int)id, adminId);
+                Message = "Данные роли успешно обновлены.";
+            }
+            else
+            {
+                await RoleService.Add(CurrentRole, adminId);
+                Message = "Новая роль успешно добавлен.";
+            }
+
+            NavigationManager.NavigateTo("/roles");
+        }
+        catch (Exception ex)
+        {
+            Message = $"Произошла ошибка при обработке данных пользователя. Попробуйте позже. Ошибка: {ex.Message}";
+        }
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("/roles");
+    }
+}

@@ -2,11 +2,16 @@
 
 @using Manufacture.Core.Entities.Identity
 @using Manufacture.BusinessLogic.Interfaces
+@using Manufacture.Infrastructure.Services
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
 @inject IUserService UserService; 
 @inject NavigationManager NavigationManager
+@inject RoleManager<Role> RoleManager
+@inject UserManager<User> UserManager
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @attribute [StreamRendering]
-@attribute [Authorize(Policy = "Permissions10")]
+@* @attribute [Authorize(Policy = "Permissions10")]  *@
 <PageTitle>Пользователи</PageTitle>
 
 <h1>Пользователи</h1>
@@ -30,6 +35,12 @@ else
                         Style="width: 100%; margin: 0 15px; max-width: 100%; border-radius: 16px;">
             <Columns>
                 <RadzenDataGridColumn TItem="User" Frozen="true" Width="80px" Property="Id" Title="#" TextAlign="TextAlign.Center" Sortable="true" Filterable="true"/>
+                <RadzenDataGridColumn TItem="User" Context="user" Sortable="false" Filterable="false" Frozen="true" Width="120px" FrozenPosition="FrozenColumnPosition.Right">
+                    <Template>
+                        <RadzenButton Icon="edit" class="rz-ripple" Click="@(() => UpdateUser(user.Id))" ButtonStyle="ButtonStyle.Primary" Style="margin-right: 8px;"></RadzenButton>
+                        <RadzenButton Icon="delete" class="rz-ripple" Click="@(() => DeleteUser(user.Id))" ButtonStyle="ButtonStyle.Danger"></RadzenButton>
+                    </Template>
+                </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="User" Property="Photo" Title="Пользователь" Sortable="false" Filterable="false">
                     <Template Context="user">
                         <div style="align-content: center;text-align: center;align-items: center; justify-content: center;">
@@ -43,6 +54,12 @@ else
                     </FooterTemplate>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="User" Property="UserName" Title="Юзернейм" Sortable="true"/>
+                <RadzenDataGridColumn TItem="User" Property="Roles" Title="Роли" Sortable="false" Filterable="false">
+                    <Template Context="roles">
+                        @RolesL[UsersL.IndexOf(roles)]
+                    </Template>
+                </RadzenDataGridColumn>
+
                 <RadzenDataGridColumn TItem="User" Property="Email" Title="Почта" Sortable="true"/>
                 <RadzenDataGridColumn TItem="User" Property="PhoneNumber" Title="Мобильный телефон" Sortable="false" Filterable="false"/>
                 <RadzenDataGridColumn TItem="User" Property="HomePhone" Title="Домашний телефон" Sortable="false" Filterable="false"/>
@@ -101,19 +118,16 @@ else
                         Последнее:<b>@String.Format("{0:d}", UsersL.OrderByDescending(o => o.UpdatedDateTime).FirstOrDefault()?.UpdatedDateTime)</b>
                     </FooterTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="User" Context="user" Sortable="false" Filterable="false" Title="Действия" Frozen="true" Width="120px">
-                    <Template>
-                        <RadzenButton Icon="edit" class="rz-ripple" Click="@(() => UpdateUser(user.Id))" ButtonStyle="ButtonStyle.Primary" Style="margin-right: 8px;"></RadzenButton>
-                        <RadzenButton Icon="delete" class="rz-ripple" Click="@(() => DeleteUser(user.Id))" ButtonStyle="ButtonStyle.Danger"></RadzenButton>
-                    </Template>
-                </RadzenDataGridColumn>
             </Columns>
         </RadzenDataGrid>
 
     </div>
 }
 
+@inject IRoleService RoleService;
+
 @code {
+    
     string currentGender = null;
 
     List<object> genders = new List<object>
@@ -130,10 +144,21 @@ else
 
 
     private List<User> UsersL;
-    
+    // private List<Role> RolesL;
+    private List<string?> RolesL = new();
+
     protected override async Task OnInitializedAsync()
     {
         UsersL = await UserService.GetUsers();
+        foreach(var user in UsersL)
+        {
+            var userRoles = await UserManager.GetRolesAsync(user);
+            // Получаем имена ролей из RoleManager
+            var roleNames = userRoles.Select(roleName => roleName);
+            // Сохраняем имена ролей в RolesL для дальнейшего использования в шаблоне
+            RolesL.Add(string.Join(", ", roleNames));
+        }
+        
     }
 
     private void CreateUser()

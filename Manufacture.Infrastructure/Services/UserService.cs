@@ -10,7 +10,7 @@ public class UserService : IUserService
 {
     private readonly IApplicationDbContext _context;
     private UserManager<User> _userManager;
-    
+
     public UserService(ApplicationDbContext context, UserManager<User> userManager)
     {
         _context = context;
@@ -47,6 +47,7 @@ public class UserService : IUserService
             {
                 await _userManager.UpdateAsync(entity);
             }
+
             entity.FirstName = user.FirstName;
             entity.MiddleName = user.MiddleName;
             entity.LastName = user.LastName;
@@ -62,14 +63,20 @@ public class UserService : IUserService
             await _context.SaveChangesAsync();
         }
     }
-    
+
     public async Task DeleteUser(int id)
     {
-        var user = await _context.Users.FindAsync(id); // Use FindAsync to retrieve by primary key
+        var user = await _context.Users.FindAsync(id);
         if (user != null)
         {
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
         }
+    }
+
+    public async Task<string> FindNameById(int? createdById)
+    {
+        var user = await _context.Users.FindAsync(createdById);
+        return user?.UserName ?? "Система";
     }
 }

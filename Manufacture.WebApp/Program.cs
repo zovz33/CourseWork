@@ -27,7 +27,7 @@ namespace Manufacture.WebApp
             builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
             builder.Services.AddSingleton<IEmailSender<User>, IdentityNoOpEmailSender>();
             builder.Services.AddScoped<IUserService, UserService>();
-            
+            builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddAuthentication(options =>
                 {
                     options.DefaultScheme = IdentityConstants.ApplicationScheme;
@@ -50,8 +50,9 @@ namespace Manufacture.WebApp
                     o.User.RequireUniqueEmail = true;
                 })
                 .AddRoles<Role>()
+                .AddUserManager<UserManager<User>>()
+                .AddSignInManager<SignInManager<User>>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddSignInManager()
                 .AddDefaultTokenProviders();
 
 
@@ -104,9 +105,8 @@ namespace Manufacture.WebApp
             {
                 // Cookie settings
                 options.Cookie.HttpOnly = true;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
-
-                options.LoginPath = "/Identity/Account/Login";
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(5); 
+                options.LoginPath = "/Identity/Account/Login"; 
                 options.AccessDeniedPath = "/AccessDenied";
                 options.SlidingExpiration = true;
             });
@@ -135,10 +135,9 @@ namespace Manufacture.WebApp
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseAntiforgery();
-            
-            app.UseAuthentication();
-            app.UseAuthorization();
+            app.UseAntiforgery(); 
+            // app.UseAuthentication();
+            // app.UseAuthorization();
 
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();

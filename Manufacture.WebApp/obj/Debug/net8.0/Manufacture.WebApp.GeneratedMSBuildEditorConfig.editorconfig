@@ -174,12 +174,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBdXRoLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Projects/dotnet/ASPNETCoreBlazorWeb/Manufacture.WebApp/Components/Pages/CRUD/Update.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDUlVEXFVwZGF0ZS5yYXpvcg==
+[D:/Projects/dotnet/ASPNETCoreBlazorWeb/Manufacture.WebApp/Components/Pages/CRUD/Roles/Roles.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDUlVEXFJvbGVzXFJvbGVzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Projects/dotnet/ASPNETCoreBlazorWeb/Manufacture.WebApp/Components/Pages/CRUD/Users.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDUlVEXFVzZXJzLnJhem9y
+[D:/Projects/dotnet/ASPNETCoreBlazorWeb/Manufacture.WebApp/Components/Pages/CRUD/Roles/RoleUpdate.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDUlVEXFJvbGVzXFJvbGVVcGRhdGUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Projects/dotnet/ASPNETCoreBlazorWeb/Manufacture.WebApp/Components/Pages/CRUD/Users/Users.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDUlVEXFVzZXJzXFVzZXJzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Projects/dotnet/ASPNETCoreBlazorWeb/Manufacture.WebApp/Components/Pages/CRUD/Users/UserUpdate.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDUlVEXFVzZXJzXFVzZXJVcGRhdGUucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Projects/dotnet/ASPNETCoreBlazorWeb/Manufacture.WebApp/Components/Pages/Errors/AccessDenied.razor]

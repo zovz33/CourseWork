@@ -1,63 +1,25 @@
-﻿@implements IDisposable
-
+﻿@using Manufacture.Core.Entities.Identity
+@using Microsoft.AspNetCore.Identity
+@implements IDisposable 
 @inject NavigationManager NavigationManager
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="/">Производство посуды</a>
-    </div>
-</div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler"/>
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Основная
-            </NavLink>
-        </div>
-
-
+<RadzenSidebar Responsive="false" Style="width: max-content">
+    <RadzenPanelMenu DisplayStyle="@(true ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)" ShowArrow="true">
+        <RadzenPanelMenuItem Text="Основная" Icon="home" Path="/"/>
         <AuthorizeView>
             <Authorized>
-                <div class="nav-item">
-                    <NavLink class="nav-link" href="users">
-                        <RadzenIcon Icon="Group" IconStyle="@IconStyle.Light" />
-                        <span class="bi" aria-hidden="true"></span> Пользователи
-                    </NavLink>
-                    
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> Личный кабинет
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <form action="Account/Logout" method="post">
-                        <AntiforgeryToken/>
-                        <input type="hidden" name="ReturnUrl" value="Account/Login"/>
-                        <button type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Выйти
-                        </button>
-                    </form>
-                </div>
+                <RadzenPanelMenuItem Text="Dashboard" Icon="dashboard" />
+                <RadzenPanelMenuItem Text="Пользователи" Icon="group" Path="users"/>
+                <RadzenPanelMenuItem Text="Роли" Icon="add_moderator" Path="roles" />
+                <RadzenPanelMenuItem Text="Личный кабинет" Icon="account_box" Path="account/manage" />
             </Authorized>
             <NotAuthorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Register">
-                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Регистрация
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Login">
-                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Авторизация
-                    </NavLink>
-                </div>
+                <RadzenPanelMenuItem Text="Регистрация" Icon="app_registration" Path="Account/Register"/>
+                <RadzenPanelMenuItem Text="Авторизация" Icon="login" Path="Account/Login"/>
             </NotAuthorized>
         </AuthorizeView>
-    </nav>
-</div>
+    </RadzenPanelMenu>
+</RadzenSidebar>
 
 @code {
     private string? currentUrl;
@@ -78,5 +40,4 @@
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
-
 }

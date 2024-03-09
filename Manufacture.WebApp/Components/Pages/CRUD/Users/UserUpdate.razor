@@ -1,0 +1,335 @@
+@page "/user/create" 
+@page "/user/update/{id:int?}" 
+@using Manufacture.Core.Entities.Identity
+@using Manufacture.BusinessLogic.Interfaces
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc.Razor
+@inject IUserService UserService
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavigationManager
+@inject RoleManager<Role> RoleManager
+@inject UserManager<User> UserManager
+
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@if (NavigationManager.Uri.Contains("/user/create"))
+{
+    <PageTitle>Добавьте нового пользователя</PageTitle>
+    <h3>Добавьте нового пользователя</h3>
+}
+else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
+{
+    <PageTitle>Изменение данных у @CurrentUser.UserName</PageTitle>
+    <h3>Измените @CurrentUser.UserName</h3>
+}
+<NavLink class="btn " href="/users">
+    <RadzenIcon Icon="keyboard_backspace" Style=".btn:hover {background-color: bisque;};align-items: center"/>
+</NavLink>
+<RadzenTemplateForm Data="@CurrentUser" Submit="@((User args) => { Submit(args); })">
+    <RadzenRow Gap="2rem" Class="rz-p-0 rz-p-lg-4">
+        <RadzenColumn Size="12" SizeMD="6">
+            <RadzenStack>
+                <RadzenFieldset Text="Информация о пользователе">
+                    <RadzenStack Gap="1rem">
+                        <RadzenRow AlignItems="AlignItems.Center">
+                            <div>
+                                <RadzenFormField Text="Юзернейм" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="badge"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenTextBox id="UserName" @bind-Value="CurrentUser.UserName"/>
+                                    </ChildContent>
+                                    @* <Helper> *@
+                                    @*     <RadzenRequiredValidator Component="UserName" Text="Имя пользователя обязательно для ввода."/> *@
+                                    @* </Helper> *@
+                                </RadzenFormField>
+                            </div>
+                            <div>
+                                <RadzenFormField Text="Пароль" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="password"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenTextBox id="PasswordHash" @bind-Value="CurrentUser.PasswordHash"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                            </div>
+                            <div>
+                                <RadzenFormField Text="Почта" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="mail"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenTextBox id="Email" @bind-Value="CurrentUser.Email"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                            </div>
+                            <div>
+                                <RadzenFormField Text="Имя" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="assignment_ind"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenTextBox id="FirstName" @bind-Value="CurrentUser.FirstName"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                            </div>
+                            <div>
+                                <RadzenFormField Text="Отчество" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="assignment_ind"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenTextBox id="MiddleName" @bind-Value="CurrentUser.MiddleName"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                            </div>
+                            <div>
+                                <RadzenFormField Text="Фамилия" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="assignment_ind"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenTextBox id="LastName" @bind-Value="CurrentUser.LastName"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                            </div>
+                            <div>
+                                <RadzenFormField Text="Пол" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="wc"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <InputSelect id="Gender" @bind-Value="CurrentUser.Gender" Style="height: 40px;">
+                                            <option value="null" hidden="hidden">Не выбрано</option>
+                                            <option value="M">Мужчина</option>
+                                            <option value="F">Женщина</option>
+                                        </InputSelect>
+                                    </ChildContent>
+                                </RadzenFormField>
+                            </div>
+                            <div>
+                                <RadzenFormField Text="Адресс" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="send"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenTextArea id="Address" @bind-Value="CurrentUser.Address"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                            </div>
+                            <div>
+                                <RadzenFormField Text="Домашний телефон" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="contact_phone"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenNumeric id="HomePhone" @bind-Value="CurrentUser.HomePhone" MaxLength="10" ShowUpDown="false" Placeholder="Введите домашний телефон" class="form-control"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                            </div>
+                            <div>
+                                <RadzenFormField Text="Мобильный телефон" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="smartphone"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenMask Mask="+* (***) ***-**-**" CharacterPattern="[0-9]" Placeholder="+0 (000) 000-00-00" class="form-control" Name="Phone" id="PhoneNumber" @bind-Value="CurrentUser.PhoneNumber" Style="width: 100%;" aria-label="Phone"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                            </div>
+                            <div>
+                                <RadzenFormField Text="Дата рождения" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="cake"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenDatePicker @bind-Value=@CurrentUser.DateOfBirth DateFormat="MM/dd/yyyy" id="DateOfBirth"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                            </div>
+                            <div class="col-md-4 p-3">
+                                <RadzenCard Style="width: 500px">
+                                    <RadzenUpload @ref="upload" ChooseText="Выбрать фото профиля" Icon="account_box" Auto="false" Multiple="true" Url="upload/multiple" Change=@(args => OnChange(args, "Manual Upload"))
+                                                  id="ProfileImage" InputAttributes="@(new Dictionary<string, object>() { { "aria-label", "select file" } })" Progress=@(args => OnProgress(args, "Manual Upload")) class="w-100"/>
+                                    <RadzenButton Text="Сохранить фото" Click=@(args => upload.Upload()) class="d-block mt-4"/>
+                                </RadzenCard>
+                            </div>
+                            <StatusMessage Message="@Message"/>
+                            <ValidationSummary @bind-Errors="validationErrors"/>
+                        </RadzenRow>
+                    </RadzenStack>
+                </RadzenFieldset>
+            </RadzenStack>
+        </RadzenColumn>
+        <RadzenColumn Size="12" SizeMD="6">
+            <RadzenStack>
+                <RadzenFieldset Text="Расширенная информация">
+                    <div class="rz-text-align-center">
+                        <RadzenFormField Text="Email подтвержден" Variant="Variant.Outlined" Style="margin: 5px 0;width: 350px">
+                            <ChildContent>
+                                <RadzenCheckBox id="EmailComfirmed" @bind-Value="CurrentUser.EmailConfirmed"/>
+                            </ChildContent>
+                        </RadzenFormField>
+                    </div>
+                    <div class="rz-text-align-center">
+                        <RadzenFormField Text="Номер телефона подтвержден" Variant="Variant.Outlined" Style="margin: 5px 0;width: 350px">
+                            <ChildContent>
+                                <RadzenCheckBox id="PhoneNumberConfirmed" @bind-Value="CurrentUser.PhoneNumberConfirmed"/>
+                            </ChildContent>
+                        </RadzenFormField>
+                    </div>
+                    <div class="rz-text-align-center">
+                        <RadzenFormField Text="Двухфакторная аутентификация вкл/выкл" Variant="Variant.Outlined" Style="margin: 5px 0;width: 350px">
+                            <ChildContent>
+                                <RadzenCheckBox id="TwoFactorEnabled" @bind-Value="CurrentUser.TwoFactorEnabled"/>
+                            </ChildContent>
+                        </RadzenFormField>
+                    </div>
+                    <RadzenFormField Text="Заблокировать до..." Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                        <ChildContent>
+                            <RadzenDatePicker id="LockoutEnd" @bind-Value="@CurrentUser.LockoutEnd" DateFormat="yyyy/MM:dd HH:mm:ss"/>
+                        </ChildContent>
+                    </RadzenFormField>
+                    @* @foreach (var role in AllRoles) *@
+                    @* { *@
+                    @*     <div> *@
+                    @*         <input type="checkbox" @bind="SelectedRoles[role]"/> @role *@
+                    @*     </div> *@
+                    @* } *@
+                    <RadzenSelectBar Multiple="true" Data="@AllRoles" @bind-Value="@selectedRoles" TextProperty="Name" ValueProperty="Id"/> 
+
+
+
+
+                </RadzenFieldset>
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" Class="rz-mt-8 rz-mb-4">
+        <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Icon="save" Text="Сохранить"/>
+        <RadzenButton ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Large" Icon="cancel" Text="Отменить" Click="@Cancel"/>
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? id { get; set; }
+    public User CurrentUser { get; set; } = new();
+    public List<string> validationErrors = new List<string>();
+    private string? Message;
+    RadzenUpload upload;
+    public List<string> AllRoles { get; set; } = new List<string>();
+
+    IEnumerable<string> selectedRoles = new List<string>();
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await UserManager.FindByIdAsync(id.ToString());
+        if (id != null)
+            CurrentUser = user;
+        var roles = RoleManager.Roles.Select(r => r.Name).ToList();
+        AllRoles = roles;
+        
+        // Получаем список ролей пользователя, если это обновление пользователя
+        if (id.HasValue)
+        {
+            
+            if (user != null)
+            {
+                var userRoles = await UserManager.GetRolesAsync(user);
+                selectedRoles = userRoles;
+            }
+        }
+        
+    }
+
+
+    async Task Submit(User args)
+    {
+        validationErrors.Clear();
+        if (CurrentUser.UserName == null || CurrentUser.UserName.Trim() == "")
+            validationErrors.Add("Юзернейм является обязательным полем.");
+
+        if (validationErrors.Any())
+        {
+            return;
+        }
+
+        try
+        {
+            int adminId = GetCurrentUserId();
+            if (id is not null)
+            {
+                // Обновляем данные пользователя
+                await UserService.UpdateUser(CurrentUser, (int)id, adminId);
+
+                // Обновляем роли пользователя
+                var user = await UserManager.FindByIdAsync(id.ToString());
+                var newRoles = selectedRoles.Except(await UserManager.GetRolesAsync(user));
+                await UserManager.AddToRolesAsync(user, newRoles);
+
+                Message = "Данные пользователя успешно обновлены.";
+            }
+            else
+            {
+                // Добавляем нового пользователя
+                await UserService.AddUser(CurrentUser, adminId);
+
+                Message = "Новый пользователь успешно добавлен.";
+            }
+
+            NavigationManager.NavigateTo("/users");
+        }
+        catch (Exception ex)
+        {
+            Message = $"Произошла ошибка при обработке данных пользователя. Попробуйте позже. Ошибка: {ex.Message}";
+        }
+    }
+
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("/users");
+    }
+
+    void OnProgress(UploadProgressArgs args, string name)
+    {
+        Console.WriteLine($"{args.Progress}% '{name}' / {args.Loaded} of {args.Total} bytes.");
+
+        if (args.Progress == 100)
+        {
+            foreach (var file in args.Files)
+            {
+                Console.WriteLine($"Uploaded: {file.Name} / {file.Size} bytes");
+            }
+        }
+    }
+
+    void OnChange(UploadChangeEventArgs args, string name)
+    {
+        foreach (var file in args.Files)
+        {
+            Console.WriteLine($"File: {file.Name} / {file.Size} bytes");
+        }
+
+        Console.WriteLine($"{name} changed");
+    }
+
+
+    void OnError(UploadErrorEventArgs args, string name)
+    {
+        Console.WriteLine($"{args.Message}");
+    }
+
+    int GetCurrentUserId()
+    {
+        var userIdClaim = HttpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier);
+        Console.WriteLine("ID: " + userIdClaim);
+        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+        {
+            return userId;
+        }
+
+        return 0;
+    }
+}

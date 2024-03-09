@@ -10,60 +10,79 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Авторизация</PageTitle>
-
-<h1>Войдите</h1>
-<div class="row">
-    <div class="col-md-4">
-        <section>
-            <StatusMessage Message="@errorMessage"/>
-            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
-                <DataAnnotationsValidator/>
-                <h2>Используйте свой аккаунт для входа</h2>
-                <hr/>
-                <ValidationSummary class="text-danger" role="alert"/>
-                <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com"/>
-                    <label for="email" class="form-label">Почта</label>
-                    <ValidationMessage For="() => Input.Email" class="text-danger"/>
-                </div>
-                <div class="form-floating mb-3">
-                    <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password"/>
-                    <label for="password" class="form-label">Пароль</label>
-                    <ValidationMessage For="() => Input.Password" class="text-danger"/>
-                </div>
-                <div class="checkbox mb-3">
-                    <label class="form-label">
-                        <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input"/>
-                        Запомнить меня
-                    </label>
-                </div>
-                <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Войти</button>
-                </div>
-                <div>
-                    <p>
-                        <a href="Account/ForgotPassword">Забыли свой пароль?</a>
-                    </p>
-                    <p>
-                        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">
-                            Зарегистрироваться
-                        </a>
-                    </p>
-                    <p>
-                        <a href="Account/ResendEmailConfirmation">Подтверждение почты.</a>
-                    </p>
-                </div>
-            </EditForm>
-        </section>
-    </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h3>Используйте другой сервис для авторизации.</h3>
+<PageTitle>Авторизация</PageTitle> 
+<RadzenFieldset class="rz-my-12 rz-mx-auto"  style="max-width: 600px;align-items: center;align-content: center;align-self: center;border-radius: 10px">
+    <HeaderTemplate>
+        <span class="d-inline-flex align-items-center align-middle">
+            <RadzenIcon Icon="login" class="me-1" /><b>Авторизация</b>
+        </span>
+    </HeaderTemplate>
+    <ChildContent> 
+        <StatusMessage Message="@errorMessage"/> 
+        @* <RadzenTemplateForm Method="post" Data="Input" OnValidSubmit="@Submit"> *@
+        <EditForm Model="Input" method="post" OnValidSubmit="Submit" FormName="login">
+            <DataAnnotationsValidator/>
+            <h2>Используйте свой аккаунт для входа</h2>
             <hr/>
-            <ExternalLoginPicker/>
-        </section>
-    </div>
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="form-floating mb-3">
+
+                <RadzenFormField Text="Почта" Variant="Variant.Outlined">
+                    <Start>
+                        <RadzenIcon Icon="alternate_email"/>
+                    </Start>
+                    <ChildContent>
+                        @* <RadzenTextBox @bind-Value="Input.Email" AutoComplete="true" aria-required="true" placeholder="name@example.com"/> *@
+                    <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com"/>
+                        </ChildContent>
+                </RadzenFormField>
+                <ValidationMessage For="() => Input.Email" class="text-danger"/>
+            </div>
+            <div class="form-floating mb-3">
+                <RadzenFormField Text="Пароль" Variant="Variant.Outlined">
+                    <Start>
+                        <RadzenIcon Icon="password"/>
+                    </Start>
+                    <ChildContent>
+                        @* <RadzenPassword @bind-Value="Input.Password" AutoComplete="true" type="password"/> *@
+                        <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password"/>
+                    </ChildContent>
+                </RadzenFormField>
+                <ValidationMessage For="() => Input.Password" class="text-danger"/>
+            </div>
+            <div class="checkbox mb-3">
+                <label class="form-label">
+                    <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input"/>
+                    Запомнить меня
+                </label>
+            </div>
+            <div>
+                <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Icon="input" Text="Войти"/>
+            </div>
+
+            <div>
+                <p>
+                    <a href="Account/ForgotPassword">Забыли свой пароль?</a>
+                </p>
+                <p>
+                    <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">
+                        Зарегистрироваться
+                    </a>
+                </p>
+                <p>
+                    <a href="Account/ResendEmailConfirmation">Подтверждение почты.</a>
+                </p>
+            </div>
+            @* </RadzenTemplateForm>  *@
+            </EditForm>
+    </ChildContent>
+</RadzenFieldset>
+<div class="col-md-6 col-md-offset-2">
+    <section>
+        <h3>Используйте другой сервис для авторизации.</h3>
+        <hr/>
+        <ExternalLoginPicker/>
+    </section>
 </div>
 
 @code {
@@ -71,7 +90,7 @@
 
     [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
 
-    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+    [SupplyParameterFromForm] private InputModel? Input { get; set; } = new();
 
     [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
 
@@ -80,12 +99,11 @@
         if (HttpMethods.IsGet(HttpContext.Request.Method))
         {
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-        }
+        } 
     }
 
-    public async Task LoginUser()
+    async Task Submit()
     {
-
         var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
         if (result.Succeeded)
         {
@@ -107,8 +125,9 @@
         {
             errorMessage = "Неудачная попытка входа.";
         }
+        
     }
-
+    
     private sealed class InputModel
     {
         [Required] [EmailAddress] public string Email { get; set; } = "";

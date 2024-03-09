@@ -1,23 +1,74 @@
 ﻿@inherits LayoutComponentBase
-
-<div class="page">
-    <div class="sidebar">
-        <NavMenu/>
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="/about">О нас</a>
-        </div>
-
-        <article class="content px-4">
+@using Microsoft.AspNetCore.Identity
+@using Manufacture.Core.Entities.Identity
+@implements IDisposable 
+@inject NavigationManager NavigationManager 
+<RadzenLayout>
+    <RadzenHeader Style="background: whitesmoke; display: flex; justify-content: space-between; align-items: center;">
+        <a class="navbar-brand text-black" href="/">Производство посуды</a>
+        <AuthorizeView>
+            <Authorized>
+                <RadzenProfileMenu Style="background: transparent;">
+                    <Template>
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Style="width: 100%; justify-content: flex-end;">
+                            <RadzenText TextAlign="TextAlign.Center" Style="text-align: right; margin-right: 15px">@context.User.Identity?.Name</RadzenText>
+                            <RadzenGravatar Email="user@example.com"/>
+                        </RadzenStack>
+                    </Template>
+                    <ChildContent>
+                        <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Style="width: 100%; justify-content: center;">
+                        <RadzenProfileMenuItem Text="Личный кабинет" Path="/account/manage" Icon="account_circle"></RadzenProfileMenuItem>
+                        <form action="Account/Logout" method="post">
+                            <AntiforgeryToken/>
+                            <input type="hidden" name="ReturnUrl" value="Account/Login"/>
+                            <RadzenButton ButtonStyle="ButtonStyle.Light" Type="Submit" Icon="logout" 
+                                          Style="justify-content: center;"/>
+                        </form>
+                        </RadzenStack>
+                    </ChildContent>
+                </RadzenProfileMenu>
+            </Authorized>
+        </AuthorizeView>
+    </RadzenHeader>
+    <NavMenu/>
+    <RadzenBody>
+        <div class="rz-p-4">
             @Body
-        </article>
-    </main>
-</div>
-<div id="blazor-error-ui">
-    Произошла необработанная ошибка.
-    <a href="" class="reload">Перезагрузить</a>
-    <a class="dismiss">🗙</a>
-</div>
+        </div>
+    </RadzenBody>
+    <RadzenFooter>
+
+    </RadzenFooter>
+    <div id="blazor-error-ui">
+        Произошла необработанная ошибка.
+        <a href="" class="reload">Перезагрузить</a>
+        <a class="dismiss">🗙</a>
+    </div>
+</RadzenLayout>
+@inject SignInManager<User> SignInManager
+
+@code {
+
+
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+}
+
 <RadzenComponents/>
