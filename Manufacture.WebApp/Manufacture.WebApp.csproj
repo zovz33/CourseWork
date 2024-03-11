@@ -23,4 +23,9 @@
         <ProjectReference Include="..\Manufacture.Infrastructure\Manufacture.Infrastructure.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Components\Pages\CRUD\Permissions\Permissions.cshtml" />
+      <_ContentIncludedByDefault Remove="Components\Pages\CRUD\Permissions\Permissions.razor" />
+    </ItemGroup>
+
 </Project>

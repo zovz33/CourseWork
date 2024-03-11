@@ -198,9 +198,12 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
                     @*         <input type="checkbox" @bind="SelectedRoles[role]"/> @role *@
                     @*     </div> *@
                     @* } *@
-                    <RadzenSelectBar Multiple="true" Data="@AllRoles" @bind-Value="@selectedRoles" TextProperty="Name" ValueProperty="Id"/> 
 
-
+                    <RadzenFormField Text="Роли пользователя" Variant="Variant.Outlined" Style="margin: 5px 0;width: 350px">
+                        <ChildContent>
+                            <RadzenSelectBar Multiple="true" Data="@AllRoles" @bind-Value="@selectedRoles" TextProperty="Name" ValueProperty="Id"/>
+                        </ChildContent>
+                    </RadzenFormField>
 
 
                 </RadzenFieldset>
@@ -222,6 +225,7 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
     public List<string> AllRoles { get; set; } = new List<string>();
 
     IEnumerable<string> selectedRoles = new List<string>();
+
     protected override async Task OnInitializedAsync()
     {
         var user = await UserManager.FindByIdAsync(id.ToString());
@@ -229,20 +233,27 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
             CurrentUser = user;
         var roles = RoleManager.Roles.Select(r => r.Name).ToList();
         AllRoles = roles;
-        
+
         // Получаем список ролей пользователя, если это обновление пользователя
         if (id.HasValue)
         {
-            
             if (user != null)
             {
                 var userRoles = await UserManager.GetRolesAsync(user);
                 selectedRoles = userRoles;
             }
         }
-        
     }
 
+    private async Task OnRolesChanged()
+    {
+        var roles = await UserManager.GetRolesAsync(CurrentUser);
+        var rolesToAdd = selectedRoles.Except(roles);
+        var rolesToRemove = roles.Except(selectedRoles);
+
+        await UserManager.AddToRolesAsync(CurrentUser, rolesToAdd);
+        await UserManager.RemoveFromRolesAsync(CurrentUser, rolesToRemove);
+    }
 
     async Task Submit(User args)
     {
@@ -264,9 +275,10 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
                 await UserService.UpdateUser(CurrentUser, (int)id, adminId);
 
                 // Обновляем роли пользователя
-                var user = await UserManager.FindByIdAsync(id.ToString());
-                var newRoles = selectedRoles.Except(await UserManager.GetRolesAsync(user));
-                await UserManager.AddToRolesAsync(user, newRoles);
+                // var user = await UserManager.FindByIdAsync(id.ToString());
+                // var newRoles = selectedRoles.Except(await UserManager.GetRolesAsync(user));
+                // await UserManager.AddToRolesAsync(user, newRoles);
+                await OnRolesChanged();
 
                 Message = "Данные пользователя успешно обновлены.";
             }
@@ -332,4 +344,5 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
 
         return 0;
     }
+
 }

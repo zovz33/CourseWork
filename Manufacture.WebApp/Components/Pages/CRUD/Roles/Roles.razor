@@ -4,6 +4,10 @@
 @using Manufacture.BusinessLogic.Interfaces
 @using Manufacture.Infrastructure.Services
 @using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using Manufacture.Core.Permissions
+@using System.Reflection
+@using System.ComponentModel
 @inject RoleManager<Role> RoleManager
 @inject NavigationManager NavigationManager
 @inject IRoleService RoleService; 
@@ -26,14 +30,13 @@ else
     <RadzenButton Icon="add" class="rz-ripple" Click="@(CreateRole)" ButtonStyle="ButtonStyle.Success" Style="margin: 15px"/>
     <div style="display: flex; flex-direction: column; margin: 16px;max-width: 95rem">
 
-        <RadzenDataGrid Data="@RolesL" TItem="Role" AllowColumnResize="true" GridLines="Radzen.DataGridGridLines.Vertical" 
+        <RadzenDataGrid Data="@RolesL" TItem="Role" AllowColumnResize="true" GridLines="Radzen.DataGridGridLines.Vertical"
                         AllowColumnReorder="false" PagerHorizontalAlign="HorizontalAlign.Center"
                         AllowPaging="true" AllowFiltering="true" FilterMode="FilterMode.Simple"
                         FilterPopupRenderMode="PopupRenderMode.OnDemand" IsNullText="-" ColumnWidth="120"
-                        AllowSorting="true" AllowMultiColumnSorting="true" ShowMultiColumnSortingIndex="true" 
+                        AllowSorting="true" AllowMultiColumnSorting="true" ShowMultiColumnSortingIndex="true"
                         Style="width: 100%; margin: 0 15px; max-width: 100%; border-radius: 16px;align-items: center;text-align: center;
                          ">
-            
             <Columns>
                 <RadzenDataGridColumn TItem="Role" Frozen="true" Width="80px" Property="Id" Title="#" TextAlign="TextAlign.Center" Sortable="true" Filterable="true"/>
                 <RadzenDataGridColumn TItem="Role" Context="role" Sortable="false" Filterable="false" Frozen="true" Width="120px" FrozenPosition="FrozenColumnPosition.Right">
@@ -50,10 +53,18 @@ else
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="Role" Property="Description" Title="Описание" Sortable="true"/>
 
+                <RadzenDataGridColumn TItem="Role" Property="Name" Title="Права">
+                    <Template Context="role">
+                        @foreach (var claim in role.RoleClaims)
+                        {
+                            <RadzenText TextStyle="TextStyle.Caption">@claim.ClaimValue.Split('.')[1]</RadzenText>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="Role" Title="Создание" Sortable="false" Filterable="false">
                     <Template Context="role">
                         <RadzenText TextStyle="TextStyle.Subtitle2" class="mb-0">
-                           @CreatedByNames[role.CreatedBy.Value]
+                            @* @(role.CreatedBy.HasValue && CreatedByNames.TryGetValue(role.CreatedBy.Value, out string createdByName) ? createdByName : "Система") *@
                         </RadzenText>
                         <RadzenText TextStyle="TextStyle.Caption">@role.CreatedDateTime</RadzenText>
                     </Template>
@@ -64,8 +75,9 @@ else
                 <RadzenDataGridColumn TItem="Role" Title="Редактирование" Sortable="false" Filterable="false">
                     <Template Context="role">
                         <RadzenText TextStyle="TextStyle.Subtitle2" class="mb-0">
-                            @UpdatedByNames[role.UpdatedBy.Value]
+                            @* @(role.UpdatedBy.HasValue && UpdatedByNames.TryGetValue(role.UpdatedBy.Value, out string updatedByName) ? updatedByName : "Система") *@
                         </RadzenText>
+
                         <RadzenText TextStyle="TextStyle.Caption">@role.UpdatedDateTime</RadzenText>
                     </Template>
                     <FooterTemplate>
@@ -74,29 +86,36 @@ else
                 </RadzenDataGridColumn>
             </Columns>
         </RadzenDataGrid>
-
     </div>
 }
 
+@inject UserManager<User> UserManager
 @code {
     private List<Role> RolesL;
     private Dictionary<int, string> CreatedByNames = new Dictionary<int, string>();
     private Dictionary<int, string> UpdatedByNames = new Dictionary<int, string>();
 
+    Dictionary<string, string> PermissionsByRole { get; set; } = new Dictionary<string, string>();
+
     protected override async Task OnInitializedAsync()
     {
         RolesL = await RoleService.GetRoles();
+
+        var permissionsList = Permissions.GetRegisteredPermissions();
+        PermissionsByRole = permissionsList.ToDictionary(
+            p => p,
+            p =>
+            {
+                var split = p.Split('.');
+                return split.Length > 1 ? split[1] : p;
+            });
+
         foreach (var role in RolesL)
         {
-            if (role.CreatedBy.HasValue && !CreatedByNames.ContainsKey(role.CreatedBy.Value))
-            {
-                CreatedByNames[role.CreatedBy.Value] = await UserService.FindNameById(role.CreatedBy.Value);
-            }
-
-            if (role.UpdatedBy.HasValue && !UpdatedByNames.ContainsKey(role.UpdatedBy.Value))
-            {
-                UpdatedByNames[role.UpdatedBy.Value] = await UserService.FindNameById(role.UpdatedBy.Value);
-            }
+            var roleClaims = await RoleManager.GetClaimsAsync(role);
+            role.RoleClaims = roleClaims.Where(c => c.Type == "Permission")
+                .Select(c => new RoleClaim { ClaimValue = c.Value, RoleId = role.Id })
+                .ToList();
         }
     }
 
@@ -115,7 +134,5 @@ else
         await RoleService.Delete(id);
         RolesL = await RoleService.GetRoles();
     }
-
-
 
 }

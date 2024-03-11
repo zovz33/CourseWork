@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Manufacture.BusinessLogic.Interfaces;
 using Manufacture.Core.Entities.Identity;
 using Manufacture.Infrastructure.Data;
@@ -9,11 +10,11 @@ namespace Manufacture.Infrastructure.Services;
 public class RoleService : IRoleService
 {
     private readonly IApplicationDbContext _context;
-    private readonly RoleManager<Role> _roleManager;
+    private readonly RoleManager<Role> RoleManager;
     public RoleService(ApplicationDbContext context, RoleManager<Role> roleManager)
     {
         _context = context;
-        _roleManager = roleManager;
+        RoleManager = roleManager;
     }
     
     public async Task<List<Role>> GetRoles()
@@ -28,7 +29,7 @@ public class RoleService : IRoleService
     
     public async Task Add(Role entity, int adminId)
     { 
-        await _roleManager.CreateAsync(entity);
+        await RoleManager.CreateAsync(entity);
         entity.CreatedBy = adminId;
         entity.UpdatedBy = 0;
         entity.CreatedDateTime = DateTime.Now;
@@ -43,7 +44,7 @@ public class RoleService : IRoleService
             entity.Name = role.Name;
             if (!string.IsNullOrEmpty(role.Name))
             {
-                await _roleManager.UpdateAsync(entity);
+                await RoleManager.UpdateAsync(entity);
             }
             entity.Description = role.Description;
             entity.UpdatedBy = adminId;
@@ -61,6 +62,31 @@ public class RoleService : IRoleService
             _context.Roles.Remove(role);
             await _context.SaveChangesAsync();
         }
+    }
+    
+    public async Task<Role> GetRoleByIdWithPermissionsAsync(int roleId)
+    {
+        return await _context.Roles
+            .Include(r => r.RoleClaims)
+            .FirstOrDefaultAsync(r => r.Id == roleId);
+    }
+    
+    public async Task AddClaimAsync(Role CurrentRole, Claim claim)
+    {
+        if (claim.Type != "Permission")
+        {
+            throw new InvalidOperationException("Only claims with type 'Permission' are allowed.");
+        }
+        await RoleManager.AddClaimAsync(CurrentRole, claim);
+    }
+    
+    public async Task RemoveClaimAsync(Role CurrentRole, Claim claim)
+    {
+        if (claim.Type != "Permission")
+        {
+            throw new InvalidOperationException("Only claims with type 'Permission' are allowed.");
+        }
+        await RoleManager.RemoveClaimAsync(CurrentRole, claim);
     }
     
 }

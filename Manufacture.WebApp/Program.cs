@@ -58,26 +58,26 @@ namespace Manufacture.WebApp
 
             builder.Services.AddAuthorization(options =>
             {
-                options.AddPolicy("Permissions10", policy =>
-                    policy.RequireRole("Administrator", "Moderator"));
-                options.AddPolicy("Permissions9", policy =>
-                    policy.RequireRole("Administrator", "Moderator"));
-                options.AddPolicy("Permissions8", policy =>
-                    policy.RequireRole("Administrator", "Moderator"));
-                options.AddPolicy("Permissions7", policy =>
-                    policy.RequireRole("Administrator", "Moderator"));
-                options.AddPolicy("Permissions6", policy =>
-                    policy.RequireRole("Administrator", "Moderator"));
-                options.AddPolicy("Permissions5", policy =>
-                    policy.RequireRole("Administrator", "Moderator"));
-                options.AddPolicy("Permissions4", policy =>
-                    policy.RequireRole("Administrator", "Moderator"));
-                options.AddPolicy("Permissions23", policy =>
-                    policy.RequireRole("Administrator", "Moderator"));
-                options.AddPolicy("Permissions2", policy =>
-                    policy.RequireRole("Administrator", "Moderator"));
-                options.AddPolicy("Permissions1", policy =>
-                    policy.RequireRole("Administrator", "Moderator", "User"));
+                // options.AddPolicy("Permissions10", policy =>
+                //     policy.RequireRole("Administrator", "Moderator"));
+                // options.AddPolicy("Permissions9", policy =>
+                //     policy.RequireRole("Administrator", "Moderator"));
+                // options.AddPolicy("Permissions8", policy =>
+                //     policy.RequireRole("Administrator", "Moderator"));
+                // options.AddPolicy("Permissions7", policy =>
+                //     policy.RequireRole("Administrator", "Moderator"));
+                // options.AddPolicy("Permissions6", policy =>
+                //     policy.RequireRole("Administrator", "Moderator"));
+                // options.AddPolicy("Permissions5", policy =>
+                //     policy.RequireRole("Administrator", "Moderator"));
+                // options.AddPolicy("Permissions4", policy =>
+                //     policy.RequireRole("Administrator", "Moderator"));
+                // options.AddPolicy("Permissions23", policy =>
+                //     policy.RequireRole("Administrator", "Moderator"));
+                // options.AddPolicy("Permissions2", policy =>
+                //     policy.RequireRole("Administrator", "Moderator"));
+                // options.AddPolicy("Permissions1", policy =>
+                //     policy.RequireRole("Administrator", "Moderator", "User"));
             });
             
             builder.Services.Configure<IdentityOptions>(options =>
