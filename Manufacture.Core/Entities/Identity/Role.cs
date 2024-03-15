@@ -11,7 +11,7 @@ public class Role : IdentityRole<int>
     public int? UpdatedBy { get; set; }
     public DateTime? UpdatedDateTime { get; set; }
 
-    public virtual ICollection<UserRole> UserRoles { get; set; }
+    public virtual ICollection<UserRole>? UserRoles { get; set; }
 
-    public virtual ICollection<RoleClaim> RoleClaims { get; set; } 
+    public virtual ICollection<RoleClaim>? RoleClaims { get; set; } 
 }

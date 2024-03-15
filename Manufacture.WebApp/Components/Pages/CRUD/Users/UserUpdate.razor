@@ -188,24 +188,16 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
                         </RadzenFormField>
                     </div>
                     <RadzenFormField Text="Заблокировать до..." Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                        <Start>
+                            <RadzenIcon Icon="lock_person"/>
+                        </Start>
                         <ChildContent>
                             <RadzenDatePicker id="LockoutEnd" @bind-Value="@CurrentUser.LockoutEnd" DateFormat="yyyy/MM:dd HH:mm:ss"/>
                         </ChildContent>
                     </RadzenFormField>
-                    @* @foreach (var role in AllRoles) *@
-                    @* { *@
-                    @*     <div> *@
-                    @*         <input type="checkbox" @bind="SelectedRoles[role]"/> @role *@
-                    @*     </div> *@
-                    @* } *@
-
-                    <RadzenFormField Text="Роли пользователя" Variant="Variant.Outlined" Style="margin: 5px 0;width: 350px">
-                        <ChildContent>
-                            <RadzenSelectBar Multiple="true" Data="@AllRoles" @bind-Value="@selectedRoles" TextProperty="Name" ValueProperty="Id"/>
-                        </ChildContent>
+                    <RadzenFormField Text="Роли пользователя" Variant="Variant.Outlined" Style="margin-top: 0.5rem;">
+                        <RadzenSelectBar Multiple="true" Data="@AllRoles" @bind-Value="@selectedRoles" TextProperty="Name" ValueProperty="Id" Style="flex-wrap: wrap; max-width: 100%;"/>
                     </RadzenFormField>
-
-
                 </RadzenFieldset>
             </RadzenStack>
         </RadzenColumn>
@@ -244,8 +236,8 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
             }
         }
     }
-
-    private async Task OnRolesChanged()
+    
+    private async Task RolesUpdate()
     {
         var roles = await UserManager.GetRolesAsync(CurrentUser);
         var rolesToAdd = selectedRoles.Except(roles);
@@ -273,18 +265,12 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
             {
                 // Обновляем данные пользователя
                 await UserService.UpdateUser(CurrentUser, (int)id, adminId);
-
-                // Обновляем роли пользователя
-                // var user = await UserManager.FindByIdAsync(id.ToString());
-                // var newRoles = selectedRoles.Except(await UserManager.GetRolesAsync(user));
-                // await UserManager.AddToRolesAsync(user, newRoles);
-                await OnRolesChanged();
+                await RolesUpdate();
 
                 Message = "Данные пользователя успешно обновлены.";
             }
             else
             {
-                // Добавляем нового пользователя
                 await UserService.AddUser(CurrentUser, adminId);
 
                 Message = "Новый пользователь успешно добавлен.";

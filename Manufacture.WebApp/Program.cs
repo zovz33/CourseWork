@@ -1,3 +1,4 @@
+using System.Reflection;
 using Manufacture.BusinessLogic.Interfaces;
 using Manufacture.Core.Entities;
 using Manufacture.Core.Entities.Identity;
@@ -5,6 +6,8 @@ using Manufacture.Infrastructure.Data;
 using Manufacture.Infrastructure.Services;
 using Manufacture.WebApp.Components;
 using Manufacture.WebApp.Components.Account;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -40,7 +43,7 @@ namespace Manufacture.WebApp
                                        "Connection string 'DbConnection' not found.");
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseNpgsql(connectionString));
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -58,26 +61,16 @@ namespace Manufacture.WebApp
 
             builder.Services.AddAuthorization(options =>
             {
-                // options.AddPolicy("Permissions10", policy =>
-                //     policy.RequireRole("Administrator", "Moderator"));
-                // options.AddPolicy("Permissions9", policy =>
-                //     policy.RequireRole("Administrator", "Moderator"));
-                // options.AddPolicy("Permissions8", policy =>
-                //     policy.RequireRole("Administrator", "Moderator"));
-                // options.AddPolicy("Permissions7", policy =>
-                //     policy.RequireRole("Administrator", "Moderator"));
-                // options.AddPolicy("Permissions6", policy =>
-                //     policy.RequireRole("Administrator", "Moderator"));
-                // options.AddPolicy("Permissions5", policy =>
-                //     policy.RequireRole("Administrator", "Moderator"));
-                // options.AddPolicy("Permissions4", policy =>
-                //     policy.RequireRole("Administrator", "Moderator"));
-                // options.AddPolicy("Permissions23", policy =>
-                //     policy.RequireRole("Administrator", "Moderator"));
-                // options.AddPolicy("Permissions2", policy =>
-                //     policy.RequireRole("Administrator", "Moderator"));
-                // options.AddPolicy("Permissions1", policy =>
-                //     policy.RequireRole("Administrator", "Moderator", "User"));
+                options.AddPolicy("CanPurge", policy => policy.RequireRole("Admin"));
+                // Here I stored necessary permissions/roles in a constant
+                foreach (var prop in typeof(Permissions).GetNestedTypes().SelectMany(c =>
+                             c.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)))
+                {
+                    var propertyValue = prop.GetValue(null);
+                    if (propertyValue is not null)
+                        options.AddPolicy((string)propertyValue,
+                            policy => policy.RequireClaim("Permission1", (string)propertyValue));
+                }
             });
             
             builder.Services.Configure<IdentityOptions>(options =>
@@ -132,12 +125,13 @@ namespace Manufacture.WebApp
                 app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
-
+ 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.UseAntiforgery(); 
-            // app.UseAuthentication();
-            // app.UseAuthorization();
+
 
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();

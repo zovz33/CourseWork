@@ -5,9 +5,11 @@
 @using Manufacture.Infrastructure.Services
 @using Microsoft.AspNetCore.Identity
 @using System.Security.Claims
-@using Manufacture.Core.Permissions
 @using System.Reflection
 @using System.ComponentModel
+@using Manufacture.BusinessLogic
+@using Manufacture.Core.Entities
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
 @inject RoleManager<Role> RoleManager
 @inject NavigationManager NavigationManager
 @inject IRoleService RoleService; 
@@ -53,14 +55,34 @@ else
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="Role" Property="Description" Title="Описание" Sortable="true"/>
 
-                <RadzenDataGridColumn TItem="Role" Property="Name" Title="Права">
+                <RadzenDataGridColumn TItem="Role" Property="Name" Title="Права" Sortable="false" Filterable="false">
                     <Template Context="role">
-                        @foreach (var claim in role.RoleClaims)
+                        @if (rolePermissions.TryGetValue(role.Id, out var permissions) && permissions.Any())
                         {
-                            <RadzenText TextStyle="TextStyle.Caption">@claim.ClaimValue.Split('.')[1]</RadzenText>
+                            <RadzenDropDown Data="@permissions.GroupBy(p => p.Split('.')[0]).Select(g => new { GroupName = GetGroupName(g.Key), Permissions = g.Select(p => p.Split('.')[1]) })" 
+                                                        TextProperty="GroupName" ValueProperty="Permissions" TValue="string" ReadOnly="true"
+                                                        AllowClear="false" Placeholder="Просмотр прав роли" AllowSelectAll="false"
+                                                        Style="width: 100%; max-width: 400px;text-align-all: center;text-align: center;align-self: center;align-content: center;">
+                                            <Template>
+                                                <div>
+                                                    <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: bold;">@context.GroupName</RadzenText>
+                                                    <div>
+                                                        @foreach (var p in context.Permissions)
+                                                        {
+                                                            <RadzenText TagName="TagName.H5">@p</RadzenText>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </Template>
+                                        </RadzenDropDown>
+                        }
+                        else
+                        {
+                            <RadzenText TagName="TagName.H4">Нет прав</RadzenText>
                         }
                     </Template>
                 </RadzenDataGridColumn>
+
                 <RadzenDataGridColumn TItem="Role" Title="Создание" Sortable="false" Filterable="false">
                     <Template Context="role">
                         <RadzenText TextStyle="TextStyle.Subtitle2" class="mb-0">
@@ -90,32 +112,23 @@ else
 }
 
 @inject UserManager<User> UserManager
+
 @code {
     private List<Role> RolesL;
     private Dictionary<int, string> CreatedByNames = new Dictionary<int, string>();
     private Dictionary<int, string> UpdatedByNames = new Dictionary<int, string>();
-
-    Dictionary<string, string> PermissionsByRole { get; set; } = new Dictionary<string, string>();
+    private Dictionary<int, List<string>> rolePermissions = new Dictionary<int, List<string>>();
+    private Dictionary<string, string> GlobalPermissions { get; set; } = new Dictionary<string, string>();
 
     protected override async Task OnInitializedAsync()
     {
-        RolesL = await RoleService.GetRoles();
+        GlobalPermissions = await RoleService.GetGlobalPermissions();
 
-        var permissionsList = Permissions.GetRegisteredPermissions();
-        PermissionsByRole = permissionsList.ToDictionary(
-            p => p,
-            p =>
-            {
-                var split = p.Split('.');
-                return split.Length > 1 ? split[1] : p;
-            });
+        RolesL = await RoleService.GetRoles();
 
         foreach (var role in RolesL)
         {
-            var roleClaims = await RoleManager.GetClaimsAsync(role);
-            role.RoleClaims = roleClaims.Where(c => c.Type == "Permission")
-                .Select(c => new RoleClaim { ClaimValue = c.Value, RoleId = role.Id })
-                .ToList();
+            rolePermissions[role.Id] = await RoleService.GetPermissionsByRoleIdAsync(role.Id);
         }
     }
 
@@ -133,6 +146,18 @@ else
     {
         await RoleService.Delete(id);
         RolesL = await RoleService.GetRoles();
+    }
+
+    private string GetGroupName(string groupName)
+    {
+        var nestedType = typeof(Permissions).GetNestedType(groupName, BindingFlags.Public | BindingFlags.Static);
+        if (nestedType != null)
+        {
+            var displayNameAttribute = nestedType.GetCustomAttribute<DisplayNameAttribute>();
+            return displayNameAttribute?.DisplayName ?? nestedType.Name;
+        }
+
+        return groupName;
     }
 
 }

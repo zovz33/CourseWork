@@ -11,7 +11,7 @@
 @inject UserManager<User> UserManager
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @attribute [StreamRendering]
-@* @attribute [Authorize(Policy = "Permissions10")]  *@
+@attribute [Authorize(Policy = "Users.View")]
 <PageTitle>Пользователи</PageTitle>
 
 <h1>Пользователи</h1>
@@ -148,7 +148,7 @@ else
     private List<string?> RolesL = new();
 
     protected override async Task OnInitializedAsync()
-    {
+    { 
         UsersL = await UserService.GetUsers();
         foreach(var user in UsersL)
         {

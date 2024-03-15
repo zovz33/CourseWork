@@ -33,7 +33,7 @@ public class UserService : IUserService
         // await _context.Users.AddAsync(user);
         await _userManager.CreateAsync(user);
         user.CreatedBy = adminId;
-        user.CreatedDateTime = DateTime.Now;
+        user.CreatedDateTime = DateTime.UtcNow;
         await _context.SaveChangesAsync();
     }
 
@@ -58,7 +58,7 @@ public class UserService : IUserService
             entity.DateOfBirth = user.DateOfBirth;
             entity.ProfileImage = user.ProfileImage;
             entity.UpdatedBy = adminId;
-            entity.UpdatedDateTime = DateTime.Now;
+            entity.UpdatedDateTime = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
         }
@@ -79,4 +79,6 @@ public class UserService : IUserService
         var user = await _context.Users.FindAsync(createdById);
         return user?.UserName ?? "Система";
     }
+    
+    
 }

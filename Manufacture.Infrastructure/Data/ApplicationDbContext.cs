@@ -7,9 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Manufacture.Infrastructure.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<User, Role, int, IdentityUserClaim<int>, IdentityUserRole<int>
-        , IdentityUserLogin<int>,
-        IdentityRoleClaim<int>, IdentityUserToken<int>>, IApplicationDbContext
+    public class ApplicationDbContext : IdentityDbContext<User, Role, int,
+        UserClaim, UserRole, UserLogin, RoleClaim, UserToken>, IApplicationDbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -18,7 +17,7 @@ namespace Manufacture.Infrastructure.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
-
+        public DbSet<RoleClaim> RoleClaims { get; set; } 
         public async Task<int> SaveChangesAsync()
         {
             return await base.SaveChangesAsync();
@@ -30,15 +29,15 @@ namespace Manufacture.Infrastructure.Data
 
             builder.Entity<User>(entity => entity.ToTable("Users"));
             builder.Entity<Role>(entity => entity.ToTable("Roles"));
-            builder.Entity<IdentityUserRole<int>>(entity =>
+            builder.Entity<UserRole>(entity =>
                 entity.ToTable("UserRoles"));
-            builder.Entity<IdentityUserClaim<int>>(entity =>
+            builder.Entity<UserClaim>(entity =>
                 entity.ToTable("UserClaim"));
-            builder.Entity<IdentityUserLogin<int>>(entity =>
+            builder.Entity<UserLogin>(entity =>
                 entity.ToTable("UserLogins"));
-            builder.Entity<IdentityUserToken<int>>(entity =>
+            builder.Entity<UserToken>(entity =>
                 entity.ToTable("UserTokens"));
-            builder.Entity<IdentityRoleClaim<int>>(entity =>
+            builder.Entity<RoleClaim>(entity =>
                 entity.ToTable("RoleClaims"));
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             

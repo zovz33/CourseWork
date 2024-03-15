@@ -280,7 +280,6 @@ D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\obj\Debug\net8.0\scope
 D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\obj\Debug\net8.0\scopedcss\Components\Layout\NavMenu.razor.rz.scp.css
 D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\obj\Debug\net8.0\scopedcss\bundle\Manufacture.WebApp.styles.css
 D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\obj\Debug\net8.0\scopedcss\projectbundle\Manufacture.WebApp.bundle.scp.css
-D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\obj\Debug\net8.0\Manufacture.WebApp.csproj.CopyComplete
 D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\obj\Debug\net8.0\Manufacture.WebApp.dll
 D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\obj\Debug\net8.0\refint\Manufacture.WebApp.dll
 D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\obj\Debug\net8.0\Manufacture.WebApp.pdb
@@ -293,3 +292,7 @@ D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\bin\Debug\net8.0\Micro
 D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\bin\Debug\net8.0\Microsoft.Extensions.Identity.Core.dll
 D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
 D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\obj\Debug\net8.0\Manufacture.WebApp.sourcelink.json
+D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\bin\Debug\net8.0\Microsoft.Extensions.Identity.Stores.dll
+D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\bin\Debug\net8.0\Npgsql.dll
+D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\bin\Debug\net8.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
+D:\Projects\dotnet\ASPNETCoreBlazorWeb\Manufacture.WebApp\obj\Debug\net8.0\Manufact.35AF0E16.Up2Date

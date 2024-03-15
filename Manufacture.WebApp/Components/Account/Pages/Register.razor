@@ -64,7 +64,7 @@
     public async Task RegisterUser(EditContext editContext)
     {
         var user = CreateUser();
-        user.CreatedDateTime = DateTime.Now;
+        user.CreatedDateTime = DateTime.UtcNow;
         user.CreatedBy = 0;
         user.UpdatedBy = 0;
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);

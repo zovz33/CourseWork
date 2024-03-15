@@ -8,8 +8,8 @@ namespace Manufacture.Infrastructure.Data
         public ApplicationDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-            optionsBuilder.UseSqlServer(
-                "Data Source=LENOVO\\SQLEXPRESS01;Initial Catalog=CourseManufacture;User Id=1;Password=1;TrustServerCertificate=True");
+            optionsBuilder.UseNpgsql(
+                "Host=localhost;Port=5432;Database=Manufacture;Username=1;Password=1;");
             return new ApplicationDbContext(optionsBuilder.Options);
         }
     }

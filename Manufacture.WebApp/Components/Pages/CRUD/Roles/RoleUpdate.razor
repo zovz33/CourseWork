@@ -2,13 +2,13 @@
 @page "/role/update/{id:int?}" 
 @using Manufacture.Core.Entities.Identity
 @using Manufacture.BusinessLogic.Interfaces
-@using System.Security.Claims
-@using Manufacture.Core.Permissions
+@using System.Security.Claims 
 @using Manufacture.Infrastructure.Services
 @using Microsoft.AspNetCore.Identity
 @using System.ComponentModel
 @using System.Reflection
 @using Manufacture.BusinessLogic
+@using Manufacture.Core.Entities
 @inject RoleManager<Role> RoleManager
 @inject IRoleService RoleService
 @inject IHttpContextAccessor HttpContextAccessor
@@ -26,7 +26,7 @@ else
     <h3>Измените роль @CurrentRole.Name</h3>
 }
 <NavLink class="btn " href="/roles">
-    <RadzenIcon Icon="keyboard_backspace" Style=".btn:hover {background-color: bisque;};align-items: center" />
+    <RadzenIcon Icon="keyboard_backspace" Style=".btn:hover {background-color: bisque;};align-items: center"/>
 </NavLink>
 <RadzenTemplateForm Data="@CurrentRole" Submit="@((Role args) => { Submit(args); })">
     <RadzenRow Gap="2rem" Class="rz-p-0 rz-p-lg-4">
@@ -38,20 +38,20 @@ else
                             <div>
                                 <RadzenFormField Text="Название роли" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
                                     <Start>
-                                        <RadzenIcon Icon="lock" />
+                                        <RadzenIcon Icon="lock"/>
                                     </Start>
                                     <ChildContent>
-                                        <RadzenTextBox @bind-Value="CurrentRole.Name" />
+                                        <RadzenTextBox @bind-Value="CurrentRole.Name"/>
                                     </ChildContent>
                                 </RadzenFormField>
                             </div>
                             <div>
                                 <RadzenFormField Text="Описание" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
                                     <Start>
-                                        <RadzenIcon Icon="description" />
+                                        <RadzenIcon Icon="description"/>
                                     </Start>
                                     <ChildContent>
-                                        <RadzenTextBox @bind-Value="CurrentRole.Description" />
+                                        <RadzenTextBox @bind-Value="CurrentRole.Description"/>
                                     </ChildContent>
                                 </RadzenFormField>
                             </div>
@@ -61,13 +61,12 @@ else
                                     {
                                         <div style="margin-bottom: 1.5rem;">
                                             <RadzenText TextStyle="TextStyle.Subtitle2">@GetGroupName(group.Key)</RadzenText>
-                                            <RadzenSelectBar @bind-Value="@SelectedPermissions" TextProperty="Value" ValueProperty="Key" Data="@group.ToDictionary(p => p.Key, p => p.Value)" Multiple="true" Style="margin-top: 0.5rem;" />
+                                            <RadzenSelectBar @bind-Value="@SelectedPermissions" TextProperty="Value" ValueProperty="Key" Data="@group.ToDictionary(p => p.Key, p => p.Value)" Multiple="true" Style="margin-top: 0.5rem;"/>
                                         </div>
                                     }
                                 </RadzenFieldset>
                             </div>
                             <StatusMessage Message="@Message"/>
-                            <ValidationSummary @bind-Errors="validationErrors"/>
                         </RadzenRow>
                     </RadzenStack>
                 </RadzenFieldset>
@@ -89,84 +88,46 @@ else
 
     private IEnumerable<string> SelectedPermissions { get; set; } = new List<string>();
     private Dictionary<string, string> GlobalPermissions { get; set; } = new Dictionary<string, string>();
-    private IEnumerable<string> PersonalRolePermissions { get; set; } = new List<string>();
 
     protected override async Task OnInitializedAsync()
     {
-        var permissionsList = Permissions.GetRegisteredPermissions();
-
-        GlobalPermissions = permissionsList.ToDictionary(
-            p => p,
-            p =>
-            {
-                var split = p.Split('.');
-                return split.Length > 1 ? split[1] : p;
-            });
+        GlobalPermissions = await RoleService.GetGlobalPermissions();
         if (id.HasValue)
         {
             CurrentRole = await RoleService.GetRoleById(id);
             var rolePermissions = await RoleManager.GetClaimsAsync(CurrentRole);
 
             SelectedPermissions = rolePermissions
-                .Where(c => c.Type == "Permission")
                 .Select(c => c.Value)
                 .ToList();
         }
     }
 
     private async Task Submit(Role args)
-    { 
-        var claims = SelectedPermissions.Select(p => new Claim("Permission", p)).ToList();
+    {
+        int adminId = GetCurrentUserId();
         if (!id.HasValue)
         {
-            // Логика для добавления новой роли
-            var result = await RoleManager.CreateAsync(args);
-            if (result.Succeeded)
-            {
-                // Добавление прав доступа (claims) для новой роли 
-                
-                foreach (var claim in claims) await RoleManager.AddClaimAsync(CurrentRole, claim);
+            await RoleService.Add(args, adminId, SelectedPermissions);
                 Message = "Роль успешно создана.";
-            }
-            else
-            {
-                Message = "Ошибка при создании роли.";
-                validationErrors.AddRange(result.Errors.Select(e => e.Description));
-            }
         }
         else
         {
             // Логика для редактирования информации о роли и её правах
             if (CurrentRole != null)
-            { 
-                var result = await RoleManager.UpdateAsync(CurrentRole);
-                if (result.Succeeded)
-                {
-                    // Обновление прав доступа (claims) для существующей роли 
-                    var existingClaims = (await RoleManager.GetClaimsAsync(CurrentRole)).Where(c => c.Type == "Permission");
-                    var claimsToRemove = existingClaims.Where(c => !SelectedPermissions.Contains(c.Value)).ToList();
-                    var claimsToAdd = claims.Where(c => !existingClaims.Any(ec => ec.Value == c.Value)).ToList();
-
-                    foreach (var claim in claimsToRemove) await RoleManager.RemoveClaimAsync(CurrentRole, claim);
-                    foreach (var claim in claimsToAdd) await RoleManager.AddClaimAsync(CurrentRole, claim);
-
-                    Message = "Роль успешно обновлена.";
-                }
-                else
-                {
-                    Message = "Ошибка при обновлении роли.";
-                    validationErrors.AddRange(result.Errors.Select(e => e.Description));
-                }
+            {   
+                await RoleService.Update(CurrentRole, adminId, SelectedPermissions);
+                Message = "Роль успешно обновлена.";    
             }
             else
             {
                 Message = "Роль не найдена.";
             }
         }
-
         NavigationManager.NavigateTo("/roles");
+ 
     }
-    
+
     void Cancel()
     {
         NavigationManager.NavigateTo("/roles");
@@ -181,6 +142,17 @@ else
         }
 
         return groupName;
+    }
+
+    int GetCurrentUserId()
+    {
+        var userIdClaim = HttpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+        {
+            return userId;
+        }
+
+        return 0;
     }
 
 }
