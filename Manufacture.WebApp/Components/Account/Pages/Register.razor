@@ -1,11 +1,9 @@
 ﻿@page "/Account/Register"
-@using System.ComponentModel.DataAnnotations
-@using System.Text
-@using System.Text.Encodings.Web
-@using Manufacture.Core.Entities.Identity
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
-@using Manufacture.Infrastructure.Data
+@using System.Text
+@using System.Text.Encodings.Web
+@using System.ComponentModel.DataAnnotations
 @inject UserManager<User> UserManager
 @inject IUserStore<User> UserStore
 @inject SignInManager<User> SignInManager
@@ -96,7 +94,7 @@
                 new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl, ["InputPassword"] = Input.Password});
         }
 
-        await SignInManager.SignInAsync(user, isPersistent: false);
+        await SignInManager.SignInAsync(user, false);
         RedirectManager.RedirectTo(ReturnUrl);
     }
 

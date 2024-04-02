@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿    using Microsoft.AspNetCore.Identity;
 
+    namespace Manufacture.Core.Entities.Identity;
 
-namespace Manufacture.Core.Entities.Identity
-{
     public class User : IdentityUser<int>
     {
         public string? FirstName { get; set; }
@@ -11,6 +10,7 @@ namespace Manufacture.Core.Entities.Identity
         public string? Gender { get; set; }
         public string? Address { get; set; }
         public string? HomePhone { get; set; }
+
         public DateTime? DateOfBirth { get; set; }
         public string? ProfileImage { get; set; }
         public int? CreatedBy { get; set; }
@@ -23,4 +23,3 @@ namespace Manufacture.Core.Entities.Identity
         public virtual ICollection<UserToken> Tokens { get; set; }
         public virtual ICollection<UserRole> UserRoles { get; set; }
     }
-}

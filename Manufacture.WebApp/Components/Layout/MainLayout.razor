@@ -1,8 +1,11 @@
 ﻿@inherits LayoutComponentBase
-@using Microsoft.AspNetCore.Identity
 @using Manufacture.Core.Entities.Identity
+@using Microsoft.AspNetCore.Identity
+@using Manufacture.BusinessLogic.Interfaces
+@using System.Security.Claims
 @implements IDisposable 
 @inject NavigationManager NavigationManager 
+
 <RadzenLayout>
     <RadzenHeader Style="background: whitesmoke; display: flex; justify-content: space-between; align-items: center;">
         <a class="navbar-brand text-black" href="/">Производство посуды</a>
@@ -17,13 +20,13 @@
                     </Template>
                     <ChildContent>
                         <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Style="width: 100%; justify-content: center;">
-                        <RadzenProfileMenuItem Text="Личный кабинет" Path="/account/manage" Icon="account_circle"></RadzenProfileMenuItem>
-                        <form action="Account/Logout" method="post">
-                            <AntiforgeryToken/>
-                            <input type="hidden" name="ReturnUrl" value="Account/Login"/>
-                            <RadzenButton ButtonStyle="ButtonStyle.Light" Type="Submit" Icon="logout" 
-                                          Style="justify-content: center;"/>
-                        </form>
+                            <RadzenProfileMenuItem Text="Личный кабинет" Path="/account/manage" Icon="account_circle"></RadzenProfileMenuItem>
+                            <form action="Account/Logout" method="post">
+                                <AntiforgeryToken/>
+                                <input type="hidden" name="ReturnUrl" value="Account/Login"/>
+                                <RadzenButton ButtonStyle="ButtonStyle.Light" Type="Submit" Icon="logout"
+                                              Style="justify-content: center;"/>
+                            </form>
                         </RadzenStack>
                     </ChildContent>
                 </RadzenProfileMenu>
@@ -46,10 +49,12 @@
     </div>
 </RadzenLayout>
 @inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@inject IUserService UserService
+@inject AuthenticationStateProvider AuthenticationStateProvider;
+@inject IHttpContextAccessor HttpContextAccessor
 
 @code {
-
-
     private string? currentUrl;
 
     protected override void OnInitialized()
@@ -58,10 +63,12 @@
         NavigationManager.LocationChanged += OnLocationChanged;
     }
 
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
         StateHasChanged();
+        var user = await UserService.GetCurrentUserAsync();
+        await SignInManager.RefreshSignInAsync(user);
     }
 
     public void Dispose()

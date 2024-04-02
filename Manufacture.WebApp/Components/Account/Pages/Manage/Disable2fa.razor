@@ -1,8 +1,5 @@
 ﻿@page "/Account/Manage/Disable2fa"
-
-@using Manufacture.Core.Entities.Identity
 @using Microsoft.AspNetCore.Identity
-@using Manufacture.Infrastructure.Data
 
 @inject UserManager<User> UserManager
 @inject IdentityUserAccessor UserAccessor
@@ -20,7 +17,7 @@
     </p>
     <p>
         Отключение 2FA не изменяет ключи, используемые в приложениях аутентификации. Если вы хотите изменить ключ,
-        используемый в приложении аутентификации, вам следует  <a href="Account/Manage/ResetAuthenticator">сбросить ваши ключи аутентификации.</a>
+        используемый в приложении аутентификации, вам следует <a href="Account/Manage/ResetAuthenticator">сбросить ваши ключи аутентификации.</a>
     </p>
 </div>
 

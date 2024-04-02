@@ -1,19 +1,17 @@
 @page "/role/create" 
 @page "/role/update/{id:int?}" 
-@using Manufacture.Core.Entities.Identity
-@using Manufacture.BusinessLogic.Interfaces
-@using System.Security.Claims 
-@using Manufacture.Infrastructure.Services
-@using Microsoft.AspNetCore.Identity
-@using System.ComponentModel
-@using System.Reflection
 @using Manufacture.BusinessLogic
+@using Manufacture.BusinessLogic.Interfaces
 @using Manufacture.Core.Entities
+@using Manufacture.Core.Entities.Identity
+@using Microsoft.AspNetCore.Identity
+@using System.Reflection
+@using System.Security.Claims
 @inject RoleManager<Role> RoleManager
 @inject IRoleService RoleService
 @inject IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager NavigationManager
-@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@rendermode @(new InteractiveServerRenderMode(false))
 
 @if (NavigationManager.Uri.Contains("/role/create"))
 {
@@ -28,6 +26,10 @@ else
 <NavLink class="btn " href="/roles">
     <RadzenIcon Icon="keyboard_backspace" Style=".btn:hover {background-color: bisque;};align-items: center"/>
 </NavLink>
+@if (!string.IsNullOrEmpty(Message))
+{
+    <RadzenAlert Shade="Shade.Lighter" AlertStyle=@(Message.Contains("Ошибка") ? AlertStyle.Danger : AlertStyle.Success) class="mt-4">@Message</RadzenAlert>
+}
 <RadzenTemplateForm Data="@CurrentRole" Submit="@((Role args) => { Submit(args); })">
     <RadzenRow Gap="2rem" Class="rz-p-0 rz-p-lg-4">
         <RadzenColumn Size="12" SizeMD="6">
@@ -82,12 +84,11 @@ else
 @code {
     [Parameter] public int? id { get; set; }
 
-    public Role CurrentRole { get; set; } = new();
-    public List<string> validationErrors = new List<string>();
+    public Role CurrentRole { get; set; } = new(); 
     private string? Message;
 
     private IEnumerable<string> SelectedPermissions { get; set; } = new List<string>();
-    private Dictionary<string, string> GlobalPermissions { get; set; } = new Dictionary<string, string>();
+    private Dictionary<string, string> GlobalPermissions { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -105,27 +106,54 @@ else
 
     private async Task Submit(Role args)
     {
-        int adminId = GetCurrentUserId();
-        if (!id.HasValue)
+        if (string.IsNullOrEmpty(args.Name) || args.Name.Length < 5)
         {
-            await RoleService.Add(args, adminId, SelectedPermissions);
-                Message = "Роль успешно создана.";
+            Message = "Ошибка: Название роли должно содержать не менее 5 символов.";
+            return;
         }
-        else
+
+        if (SelectedPermissions == null || !SelectedPermissions.Any())
         {
-            // Логика для редактирования информации о роли и её правах
-            if (CurrentRole != null)
-            {   
-                await RoleService.Update(CurrentRole, adminId, SelectedPermissions);
-                Message = "Роль успешно обновлена.";    
+            Message = "Ошибка: Вы должны выбрать хотя бы одно право доступа для роли.";
+            return;
+        }
+
+        try
+        {
+            if (!string.IsNullOrEmpty(args.Name))
+            {
+                var existingRole = await RoleManager.FindByNameAsync(args.Name);
+                if (existingRole != null && existingRole.Id != args.Id)
+                {
+                    Message = "Ошибка: Роль с таким именем уже существует.";
+                    return;
+                }
+            }
+            if (!id.HasValue)
+            {
+                await RoleService.Add(args, SelectedPermissions);
+                Message = "Роль успешно создана.";
             }
             else
             {
-                Message = "Роль не найдена.";
+                // Логика для редактирования информации о роли и её правах
+                if (CurrentRole != null)
+                {
+                    await RoleService.Update(CurrentRole, SelectedPermissions);
+                    Message = "Роль успешно обновлена.";
+                }
+                else
+                {
+                    Message = "Роль не найдена.";
+                }
             }
+
+            NavigationManager.NavigateTo("/roles");
         }
-        NavigationManager.NavigateTo("/roles");
- 
+        catch (Exception ex)
+        {
+            Message = $"Произошла ошибка при обработке данных роли. Попробуйте позже. Ошибка: {ex.Message}";
+        }
     }
 
     void Cancel()
@@ -143,16 +171,4 @@ else
 
         return groupName;
     }
-
-    int GetCurrentUserId()
-    {
-        var userIdClaim = HttpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
-        {
-            return userId;
-        }
-
-        return 0;
-    }
-
 }

@@ -12,15 +12,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Manufacture.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240312105952_v2")]
-    partial class v2
+    [Migration("20240402171745_v6")]
+    partial class v6
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.2")
+                .HasAnnotation("ProductVersion", "8.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -45,7 +45,6 @@ namespace Manufacture.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
@@ -68,6 +67,9 @@ namespace Manufacture.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Id")
+                        .IsUnique();
+
+                    b.HasIndex("Name")
                         .IsUnique();
 
                     b.HasIndex("NormalizedName")
@@ -309,6 +311,166 @@ namespace Manufacture.Infrastructure.Migrations
                     b.ToTable("UserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Manufacture.Core.Entities.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CompletionDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("CreatedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ProductToOrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("Quantity")
+                        .HasColumnType("numeric");
+
+                    b.Property<int?>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductToOrderId")
+                        .IsUnique();
+
+                    b.ToTable("Orders", (string)null);
+                });
+
+            modelBuilder.Entity("Manufacture.Core.Entities.Product", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal?>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("CreatedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("Price")
+                        .HasColumnType("numeric");
+
+                    b.Property<int?>("ProductToOrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Products", (string)null);
+                });
+
+            modelBuilder.Entity("Manufacture.Core.Entities.ProductToOrder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("CreatedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProductToOrder", (string)null);
+                });
+
+            modelBuilder.Entity("Manufacture.Core.Entities.RawMaterial", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("CreatedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("Price")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Quantity")
+                        .HasColumnType("numeric");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RawMaterials", (string)null);
+                });
+
+            modelBuilder.Entity("ProductToOrderRawMaterial", b =>
+                {
+                    b.Property<int>("ProductMaterialId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductMaterialId1")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ProductMaterialId", "ProductMaterialId1");
+
+                    b.HasIndex("ProductMaterialId1");
+
+                    b.ToTable("ProductToOrderRawMaterial");
+                });
+
             modelBuilder.Entity("Manufacture.Core.Entities.Identity.RoleClaim", b =>
                 {
                     b.HasOne("Manufacture.Core.Entities.Identity.Role", "Role")
@@ -372,6 +534,32 @@ namespace Manufacture.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Manufacture.Core.Entities.Order", b =>
+                {
+                    b.HasOne("Manufacture.Core.Entities.ProductToOrder", "ProductToOrder")
+                        .WithOne("Order")
+                        .HasForeignKey("Manufacture.Core.Entities.Order", "ProductToOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProductToOrder");
+                });
+
+            modelBuilder.Entity("ProductToOrderRawMaterial", b =>
+                {
+                    b.HasOne("Manufacture.Core.Entities.RawMaterial", null)
+                        .WithMany()
+                        .HasForeignKey("ProductMaterialId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Manufacture.Core.Entities.ProductToOrder", null)
+                        .WithMany()
+                        .HasForeignKey("ProductMaterialId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Manufacture.Core.Entities.Identity.Role", b =>
                 {
                     b.Navigation("RoleClaims");
@@ -388,6 +576,12 @@ namespace Manufacture.Infrastructure.Migrations
                     b.Navigation("Tokens");
 
                     b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("Manufacture.Core.Entities.ProductToOrder", b =>
+                {
+                    b.Navigation("Order")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

@@ -3,54 +3,81 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
-@using Manufacture.Core.Entities.Identity
+@using Manufacture.BusinessLogic.Interfaces
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
-@using Manufacture.Infrastructure.Data
 
 @inject UserManager<User> UserManager
 @inject IEmailSender<User> EmailSender
 @inject IdentityUserAccessor UserAccessor
 @inject NavigationManager NavigationManager
-
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IUserService UserService
+@rendermode @(new InteractiveServerRenderMode(false))
 <PageTitle>Управление почтой</PageTitle>
 
 <h3>Управление почтой</h3>
 
-<StatusMessage Message="@message"/>
 <div class="row">
     <div class="col-md-6">
-        <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post">
-            <AntiforgeryToken/>
-        </form>
-        <EditForm Model="Input" FormName="change-email" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator/>
-            <ValidationSummary class="text-danger" role="alert"/>
-            @if (isEmailConfirmed)
-            {
-                <div class="form-floating mb-3 input-group">
-                    <input type="text" value="@email" class="form-control" placeholder="Введите вашу почту." disabled/>
-                    <div class="input-group-append">
-                        <span class="h-100 input-group-text text-success font-weight-bold">✓</span>
-                    </div>
-                    <label for="email" class="form-label">Текущая почта</label>
-                </div>
-            }
-            else
-            {
-                <div class="form-floating mb-3">
-                    <input type="text" value="@email" class="form-control" placeholder="Введите вашу почту." disabled/>
-                    <label for="email" class="form-label">Текущая почта</label>
-                    <button type="submit" class="btn btn-link" form="send-verification-form">Отправить письмо с подтверждением</button>
-                </div>
-            }
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Пожалуйста, введите вашу почту."/>
-                <label for="new-email" class="form-label">Новая почта</label>
-                <ValidationMessage For="() => Input.NewEmail" class="text-danger"/>
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Изменить почту</button>
-        </EditForm>
+        @* <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post"> *@
+        @*     <AntiforgeryToken/> *@
+        @* </form> *@
+
+        <RadzenTemplateForm Data="@Input" Submit="@((InputModel args) => { Submit(args); })">
+            <RadzenRow>
+                <RadzenColumn>
+                    <RadzenFieldset Text="Управление почтой">
+                        <RadzenStack Gap="1rem">
+
+                            @if (isEmailConfirmed)
+                            {
+                                <RadzenFormField Text="Текущая почта" Variant="Variant.Outlined">
+                                    <Start>
+                                        <RadzenIcon Icon="mark_email_read"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <InputText @bind-Value="email" disabled="true" style="font-size: 1.5rem;width: 45rem;"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                            }
+                            else
+                            {
+                                <RadzenFormField Text="Текущая почта" Variant="Variant.Outlined">
+                                    <Start>
+                                        <RadzenIcon Icon="mail_lock"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <InputText @bind-Value="email" Disabled="true" style="font-size: 1.5rem;width: 45rem;"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                                <RadzenButton ButtonType="ButtonType.Submit" Text="Отправить письмо с подтверждением" class="btn btn-link" Click="@OnSendEmailVerificationAsync"/>
+                            }
+
+
+                            <RadzenFormField Text="Почта" Variant="Variant.Outlined">
+                                <Start>
+                                    <RadzenIcon Icon="mail"/>
+                                </Start>
+                                <ChildContent>
+                                    <InputText @bind-Value="Input.NewEmail" Placeholder="Пожалуйста, введите вашу почту." style="font-size: 1.5rem;width: 45rem;"/>
+                                </ChildContent>
+                            </RadzenFormField>
+                            <div Style="width: 20rem;align-self: center">
+                                <RadzenButton ButtonType="ButtonType.Submit" Text="Изменить почту" Style="align-content: center;justify-self: center;display: inline;width: 100%"/>
+                            </div>
+
+                            <RadzenButton ButtonType="ButtonType.Button" Text="Эмулировать подтверждение новой почты" Click="@EmulateNewEmailConfirmation"/>
+                        </RadzenStack>
+                    </RadzenFieldset>
+
+                </RadzenColumn>
+            </RadzenRow>
+        </RadzenTemplateForm>
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <RadzenAlert AlertStyle="AlertStyle.Info" Shade="Shade.Lighter" class="mt-4">@message</RadzenAlert>
+        }
     </div>
 </div>
 
@@ -60,25 +87,30 @@
     private string? email;
     private bool isEmailConfirmed;
 
-    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
-
     [SupplyParameterFromForm(FormName = "change-email")]
     private InputModel Input { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
-        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        user = await UserService.GetCurrentUserAsync();
         email = await UserManager.GetEmailAsync(user);
         isEmailConfirmed = await UserManager.IsEmailConfirmedAsync(user);
-
         Input.NewEmail ??= email;
     }
 
-    private async Task OnValidSubmitAsync()
+    async Task Submit(InputModel args)
     {
         if (Input.NewEmail is null || Input.NewEmail == email)
         {
             message = "Ваш адрес электронной почты не изменился.";
+            return;
+        }
+
+        // Проверяем, существует ли пользователь с такой почтой
+        var existingUser = await UserManager.FindByEmailAsync(Input.NewEmail);
+        if (existingUser != null)
+        {
+            message = "Пользователь с такой почтой уже существует.";
             return;
         }
 
@@ -119,6 +151,35 @@
         [EmailAddress]
         [Display(Name = "Новая почта")]
         public string? NewEmail { get; set; }
+    }
+
+    private async Task EmulateNewEmailConfirmation()
+    {
+        if (Input.NewEmail is null || Input.NewEmail == email)
+        {
+            message = "Ваш адрес электронной почты не изменился.";
+            return;
+        }
+
+        var existingUser = await UserManager.FindByEmailAsync(Input.NewEmail);
+        if (existingUser != null)
+        {
+            message = "Пользователь с такой почтой уже существует.";
+            return;
+        }
+
+        var token = await UserManager.GenerateChangeEmailTokenAsync(user, Input.NewEmail);
+        var result = await UserManager.ChangeEmailAsync(user, Input.NewEmail, token);
+
+        if (result.Succeeded)
+        {
+            message = "Новая почта успешно подтверждена (эмуляция).";
+            email = Input.NewEmail;
+        }
+        else
+        {
+            message = "Не удалось подтвердить новую почту (эмуляция).";
+        }
     }
 
 }

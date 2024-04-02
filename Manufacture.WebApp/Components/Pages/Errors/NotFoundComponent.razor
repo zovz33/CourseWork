@@ -1,0 +1,82 @@
+@page "/404"
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+    body {
+        
+         
+    }
+ 
+ .container{
+ align-self: center;
+        align-content: center;
+        alignment-baseline: center;
+        vertical-align: center;
+        align-items: center;
+        vertical-align: center;
+        text-align: center;
+ }
+
+    .title {
+      margin: 0 0 1rem;
+      font-weight: 500;
+      font-size: 2rem;
+    }
+
+    .message {
+      margin-bottom: 2rem;
+      font-size: 1.25rem;
+      color: #727272;
+    }
+
+    .button {
+      padding: 0 1.5rem 0 .75rem;
+      border-radius: .3rem;
+      display: inline-block;
+      background-color: #009e66;
+      color: #fff;
+      text-decoration: none;
+      font-size: .875rem;
+      font-weight: 500;
+      line-height: 2.5rem;
+    }
+ 
+
+    @@media screen and (min-width:480px) {
+      .title {
+        font-size: 3rem;
+        font-weight: 700;
+      }
+
+      .message {
+        font-size: 2rem;
+        font-weight: 300;
+      }
+
+      .message .br {
+        display: block;
+      }
+
+      .button {
+        line-height: 2.75rem;
+      }
+    }
+  </style>
+    <title>Страница не найдена</title>
+    <meta name="description" content="page-not-found">
+</head>
+
+<body>
+<main class="container">
+    <h1 class="title">Страница не найдена</h1>
+    <p class="message">Данной страницы не существует</p>
+    <p>
+        <a  href="/">
+            <RadzenButton Text="Основная" Icon="arrow_back" Variant="Variant.Filled" Shade="Shade.Lighter" Style="background-color: #009e66; color: white; font-size: 1.5rem; padding: 20px" />
+        </a>
+    </p>
+</main>
+</body>

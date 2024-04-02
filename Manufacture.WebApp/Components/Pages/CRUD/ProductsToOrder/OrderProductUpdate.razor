@@ -1,0 +1,138 @@
+@page "/orderproduct/create"
+@page "/orderproduct/update/{id:int?}" 
+@using Manufacture.Core.Entities
+@using Manufacture.BusinessLogic.Interfaces
+@inject IOrderProductService OrderProductService
+@inject NavigationManager NavigationManager
+@rendermode @(new InteractiveServerRenderMode(false))
+@attribute [StreamRendering]
+
+@if (NavigationManager.Uri.Contains("/orderproduct/create"))
+{
+    <PageTitle>Добавление продукта на заказ</PageTitle>
+    <h3>Добавление продукта на заказ</h3>
+}
+else
+{
+    <PageTitle>Редактирование продукта на заказ</PageTitle>
+    <h3>Редактирование продукта на заказ</h3>
+}
+
+<NavLink class="btn " href="/orderproduct">
+    <RadzenIcon Icon="keyboard_backspace" Style=".btn:hover {background-color: bisque;};align-items: center"/>
+</NavLink>
+@if (!string.IsNullOrEmpty(Message))
+{
+    <RadzenAlert Shade="Shade.Lighter" AlertStyle=@(Message.Contains("Ошибка") ? AlertStyle.Danger : AlertStyle.Success) class="mt-4">@Message</RadzenAlert>
+}
+<RadzenTemplateForm Data="@CurrentEntity" Submit="@((ProductToOrder args) => { Submit(args); })">
+    <RadzenRow Gap="2rem" Class="rz-p-0 rz-p-lg-4">
+        <RadzenColumn Size="12" SizeMD="6">
+            <RadzenStack>
+                <RadzenFieldset Text="Информация о роли">
+                    <RadzenStack Gap="1rem">
+                        <RadzenRow AlignItems="AlignItems.Center">
+                            <div>
+                                <RadzenFormField Text="Название продукта на заказ" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="cooking"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenTextBox @bind-Value="CurrentEntity.Name"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                            </div>
+                            <div>
+                                <RadzenFormField Text="Описание" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="description"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenTextBox @bind-Value="CurrentEntity.Description"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                            </div>
+
+                        </RadzenRow>
+                    </RadzenStack>
+                </RadzenFieldset>
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" Class="rz-mt-8 rz-mb-4">
+        <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Icon="save" Text="Сохранить"/>
+        <RadzenButton ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Large" Icon="cancel" Text="Отменить" Click="@Cancel"/>
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? id { get; set; }
+    private string? Message;
+    private ProductToOrder CurrentEntity { get; set; } = new ProductToOrder();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (id.HasValue)
+        {
+            CurrentEntity = await OrderProductService.GetByIdAsync(id.Value);
+        }
+    }
+
+    private async Task Submit(ProductToOrder args)
+    {
+        if (string.IsNullOrEmpty(args.Name) || args.Name.Length < 4)
+        {
+            Message = "Ошибка: Название продукта на заказ должно содержать не менее 4 символов.";
+            return;
+        }
+
+        if (string.IsNullOrEmpty(args.Description))
+        {
+            Message = "Ошибка: заполните описание";
+            return;
+        }
+
+        try
+        {
+            if (!string.IsNullOrEmpty(args.Name))
+            {
+                var entityByName = await OrderProductService.GetByNameAsync(args.Name);
+                if (entityByName != null && entityByName.Id != args.Id)
+                {
+                    Message = "Ошибка: Продукт с таким именем уже существует.";
+                    return;
+                }
+            }
+
+            if (!id.HasValue)
+            {
+                await OrderProductService.AddAsync(CurrentEntity);
+                Message = "Материал успешно создан.";
+            }
+            else
+            {
+                if (CurrentEntity != null)
+                {
+                    await OrderProductService.UpdateAsync(CurrentEntity);
+                    Message = "Материал успешно обновлен.";
+                }
+                else
+                {
+                    Message = "Материал не найден.";
+                }
+            }
+
+            NavigationManager.NavigateTo("/orderproduct");
+        }
+        catch (Exception ex)
+        {
+            Message = $"Произошла ошибка при обработке данных роли. Попробуйте позже. Ошибка: {ex.Message}";
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/orderproduct");
+    }
+
+}

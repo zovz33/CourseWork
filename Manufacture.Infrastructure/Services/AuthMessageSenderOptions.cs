@@ -1,7 +1,6 @@
-﻿namespace Manufacture.Infrastructure.Services
+﻿namespace Manufacture.Infrastructure.Services;
+
+public class AuthMessageSenderOptions
 {
-    public class AuthMessageSenderOptions
-    {
-        public string? SendGridKey { get; set; }
-    }
+    public string? SendGridKey { get; set; }
 }

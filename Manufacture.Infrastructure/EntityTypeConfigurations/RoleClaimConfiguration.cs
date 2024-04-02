@@ -11,6 +11,7 @@ public class RoleClaimConfiguration : IEntityTypeConfiguration<RoleClaim>
         builder.HasKey("Id");
         builder.HasIndex("Id").IsUnique();
         builder.Property(u => u.ClaimType).HasMaxLength(32).IsRequired();
-        builder.Property(u => u.ClaimValue).HasMaxLength(128).IsRequired();;
+        builder.Property(u => u.ClaimValue).HasMaxLength(128).IsRequired();
+        ;
     }
 }

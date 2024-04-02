@@ -12,12 +12,16 @@ public class RoleService : IRoleService
 {
     private readonly IApplicationDbContext _context;
     private readonly RoleManager<Role> RoleManager;
+    private readonly IUserService userService;
 
-    public RoleService(ApplicationDbContext context, RoleManager<Role> roleManager)
+    public RoleService(ApplicationDbContext context, RoleManager<Role> roleManager, IUserService UserService)
     {
+        userService = UserService;
         _context = context;
         RoleManager = roleManager;
     }
+
+    private Dictionary<string, string> GlobalPermissions { get; set; } = new();
 
     public async Task<List<Role>> GetRoles()
     {
@@ -29,26 +33,30 @@ public class RoleService : IRoleService
         return await _context.Roles.FindAsync(id);
     }
 
-    public async Task Add(Role role, int adminId, IEnumerable<string> selectedPermissions)
+    public async Task Add(Role role, IEnumerable<string> selectedPermissions)
     {
+        var adminId = await userService.GetCurrentUserIdAsync();
         if (role != null)
         {
             role.CreatedBy = adminId;
             role.UpdatedBy = 0;
             role.CreatedDateTime = DateTime.UtcNow;
         }
+
         await RoleManager.CreateAsync(role);
         foreach (var permission in selectedPermissions)
         {
             var claim = new Claim("Permission1", permission);
-            await  RoleManager.AddClaimAsync(role, claim);
+            await RoleManager.AddClaimAsync(role, claim);
         }
+
         await _context.SaveChangesAsync();
     }
-    
-    
-    public async Task Update(Role role, int adminId, IEnumerable<string> selectedPermissions)
+
+
+    public async Task Update(Role role, IEnumerable<string> selectedPermissions)
     {
+        var adminId = await userService.GetCurrentUserIdAsync();
         var entity = await _context.Roles
             .Include(r => r.RoleClaims)
             .FirstOrDefaultAsync(r => r.Id == role.Id);
@@ -59,30 +67,24 @@ public class RoleService : IRoleService
             entity.Description = role.Description;
             entity.UpdatedBy = adminId;
             entity.UpdatedDateTime = DateTime.UtcNow;
-             
+
             var oldPermission = await _context.Roles
                 .Include(r => r.RoleClaims)
                 .FirstOrDefaultAsync(r => r.Id == role.Id);
 
             foreach (var claim in oldPermission.RoleClaims)
-            {
                 await RoleManager.RemoveClaimAsync(role, new Claim(claim.ClaimType, claim.ClaimValue));
-            }
-            
+
             // Добавляем новые права доступа из SelectedPermissions
             foreach (var permission in selectedPermissions)
             {
                 var claim = new Claim("Permission1", permission);
-                await  RoleManager.AddClaimAsync(role, claim);
+                await RoleManager.AddClaimAsync(role, claim);
             }
 
             await _context.SaveChangesAsync();
         }
     }
-
-
-
-
 
 
     public async Task Delete(int id)
@@ -112,20 +114,18 @@ public class RoleService : IRoleService
                 rc.RoleId == role.Id && rc.ClaimType == "Permission1" && rc.ClaimValue == permission.Value);
 
         if (existingClaim != null)
-        {
             throw new InvalidOperationException("Данное право доступа уже существует у этой роли.");
-        }
 
         var claim = new RoleClaim
         {
             RoleId = role.Id,
             ClaimType = "Permission2", // Указываем явно тип утверждения
-            ClaimValue = permission.Value,
+            ClaimValue = permission.Value
         };
         _context.RoleClaims.Add(claim);
         await _context.SaveChangesAsync();
     }
-    
+
 
     public async Task RemovePermissionAsync(Role role, Claim permission)
     {
@@ -139,8 +139,7 @@ public class RoleService : IRoleService
             await _context.SaveChangesAsync();
         }
     }
-    
-    private Dictionary<string, string> GlobalPermissions { get; set; } = new Dictionary<string, string>();
+
     public async Task<Dictionary<string, string>> GetGlobalPermissions()
     {
         var permissionsList = Permissions.GetRegisteredPermissions();

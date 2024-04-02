@@ -2,16 +2,16 @@
 @page "/user/update/{id:int?}" 
 @using Manufacture.Core.Entities.Identity
 @using Manufacture.BusinessLogic.Interfaces
-@using System.Security.Claims
 @using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.Mvc.Razor
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
 @inject IUserService UserService
 @inject IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager NavigationManager
 @inject RoleManager<Role> RoleManager
 @inject UserManager<User> UserManager
 
-@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@rendermode @(new InteractiveServerRenderMode(false))
 @if (NavigationManager.Uri.Contains("/user/create"))
 {
     <PageTitle>Добавьте нового пользователя</PageTitle>
@@ -25,6 +25,10 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
 <NavLink class="btn " href="/users">
     <RadzenIcon Icon="keyboard_backspace" Style=".btn:hover {background-color: bisque;};align-items: center"/>
 </NavLink>
+@if (!string.IsNullOrEmpty(Message))
+{
+    <RadzenAlert Shade="Shade.Lighter" AlertStyle=@(Message.Contains("Ошибка") ? AlertStyle.Danger : AlertStyle.Success) class="mt-4">@Message</RadzenAlert>
+}
 <RadzenTemplateForm Data="@CurrentUser" Submit="@((User args) => { Submit(args); })">
     <RadzenRow Gap="2rem" Class="rz-p-0 rz-p-lg-4">
         <RadzenColumn Size="12" SizeMD="6">
@@ -38,11 +42,8 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
                                         <RadzenIcon Icon="badge"/>
                                     </Start>
                                     <ChildContent>
-                                        <RadzenTextBox id="UserName" @bind-Value="CurrentUser.UserName"/>
+                                        <RadzenTextBox @bind-Value="CurrentUser.UserName"/>
                                     </ChildContent>
-                                    @* <Helper> *@
-                                    @*     <RadzenRequiredValidator Component="UserName" Text="Имя пользователя обязательно для ввода."/> *@
-                                    @* </Helper> *@
                                 </RadzenFormField>
                             </div>
                             <div>
@@ -51,7 +52,7 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
                                         <RadzenIcon Icon="password"/>
                                     </Start>
                                     <ChildContent>
-                                        <RadzenTextBox id="PasswordHash" @bind-Value="CurrentUser.PasswordHash"/>
+                                        <RadzenTextBox @bind-Value="CurrentUser.PasswordHash"/>
                                     </ChildContent>
                                 </RadzenFormField>
                             </div>
@@ -61,7 +62,7 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
                                         <RadzenIcon Icon="mail"/>
                                     </Start>
                                     <ChildContent>
-                                        <RadzenTextBox id="Email" @bind-Value="CurrentUser.Email"/>
+                                        <RadzenTextBox @bind-Value="CurrentUser.Email"/>
                                     </ChildContent>
                                 </RadzenFormField>
                             </div>
@@ -71,7 +72,7 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
                                         <RadzenIcon Icon="assignment_ind"/>
                                     </Start>
                                     <ChildContent>
-                                        <RadzenTextBox id="FirstName" @bind-Value="CurrentUser.FirstName"/>
+                                        <RadzenTextBox @bind-Value="CurrentUser.FirstName"/>
                                     </ChildContent>
                                 </RadzenFormField>
                             </div>
@@ -81,7 +82,7 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
                                         <RadzenIcon Icon="assignment_ind"/>
                                     </Start>
                                     <ChildContent>
-                                        <RadzenTextBox id="MiddleName" @bind-Value="CurrentUser.MiddleName"/>
+                                        <RadzenTextBox @bind-Value="CurrentUser.MiddleName"/>
                                     </ChildContent>
                                 </RadzenFormField>
                             </div>
@@ -91,7 +92,7 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
                                         <RadzenIcon Icon="assignment_ind"/>
                                     </Start>
                                     <ChildContent>
-                                        <RadzenTextBox id="LastName" @bind-Value="CurrentUser.LastName"/>
+                                        <RadzenTextBox @bind-Value="CurrentUser.LastName"/>
                                     </ChildContent>
                                 </RadzenFormField>
                             </div>
@@ -101,7 +102,7 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
                                         <RadzenIcon Icon="wc"/>
                                     </Start>
                                     <ChildContent>
-                                        <InputSelect id="Gender" @bind-Value="CurrentUser.Gender" Style="height: 40px;">
+                                        <InputSelect @bind-Value="CurrentUser.Gender" Style="height: 40px;">
                                             <option value="null" hidden="hidden">Не выбрано</option>
                                             <option value="M">Мужчина</option>
                                             <option value="F">Женщина</option>
@@ -115,7 +116,7 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
                                         <RadzenIcon Icon="send"/>
                                     </Start>
                                     <ChildContent>
-                                        <RadzenTextArea id="Address" @bind-Value="CurrentUser.Address"/>
+                                        <RadzenTextArea @bind-Value="CurrentUser.Address"/>
                                     </ChildContent>
                                 </RadzenFormField>
                             </div>
@@ -125,7 +126,7 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
                                         <RadzenIcon Icon="contact_phone"/>
                                     </Start>
                                     <ChildContent>
-                                        <RadzenNumeric id="HomePhone" @bind-Value="CurrentUser.HomePhone" MaxLength="10" ShowUpDown="false" Placeholder="Введите домашний телефон" class="form-control"/>
+                                        <RadzenNumeric @bind-Value="CurrentUser.HomePhone" ShowUpDown="false" Placeholder="Введите домашний телефон" class="form-control"/>
                                     </ChildContent>
                                 </RadzenFormField>
                             </div>
@@ -145,19 +146,17 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
                                         <RadzenIcon Icon="cake"/>
                                     </Start>
                                     <ChildContent>
-                                        <RadzenDatePicker @bind-Value=@CurrentUser.DateOfBirth DateFormat="MM/dd/yyyy" id="DateOfBirth"/>
+                                        <RadzenDatePicker @bind-Value="@CurrentUser.DateOfBirth" DateFormat="MM/dd/yyyy" id="DateOfBirth" InitialViewDate="DateTime.Now.AddYears(-20)" Min="DateTime.Today.AddYears(-90)" Max="DateTime.Today.AddYears(-10)"/>
                                     </ChildContent>
                                 </RadzenFormField>
                             </div>
                             <div class="col-md-4 p-3">
                                 <RadzenCard Style="width: 500px">
                                     <RadzenUpload @ref="upload" ChooseText="Выбрать фото профиля" Icon="account_box" Auto="false" Multiple="true" Url="upload/multiple" Change=@(args => OnChange(args, "Manual Upload"))
-                                                  id="ProfileImage" InputAttributes="@(new Dictionary<string, object>() { { "aria-label", "select file" } })" Progress=@(args => OnProgress(args, "Manual Upload")) class="w-100"/>
-                                    <RadzenButton Text="Сохранить фото" Click=@(args => upload.Upload()) class="d-block mt-4"/>
+                                                  id="ProfileImage" InputAttributes="@(new Dictionary<string, object> { { "aria-label", "select file" } })" Progress=@(args => OnProgress(args, "Manual Upload")) class="w-100"/>
+                                    <RadzenButton Text="Сохранить фото" Click="@(args => upload.Upload())" class="d-block mt-4"/>
                                 </RadzenCard>
                             </div>
-                            <StatusMessage Message="@Message"/>
-                            <ValidationSummary @bind-Errors="validationErrors"/>
                         </RadzenRow>
                     </RadzenStack>
                 </RadzenFieldset>
@@ -192,10 +191,10 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
                             <RadzenIcon Icon="lock_person"/>
                         </Start>
                         <ChildContent>
-                            <RadzenDatePicker id="LockoutEnd" @bind-Value="@CurrentUser.LockoutEnd" DateFormat="yyyy/MM:dd HH:mm:ss"/>
+                            <RadzenDatePicker id="LockoutEnd" @bind-Value="@CurrentUser.LockoutEnd" InitialViewDate="DateTime.UtcNow" DateFormat="yyyy/MM:dd HH:mm" Min="DateTime.UtcNow" Max="DateTime.Today.AddYears(10)"/>
                         </ChildContent>
                     </RadzenFormField>
-                    <RadzenFormField Text="Роли пользователя" Variant="Variant.Outlined" Style="margin-top: 0.5rem;">
+                    <RadzenFormField Text="Роли пользователя" AllowFloatingLabel="false" Variant="Variant.Outlined" Style="margin-top: 0.5rem;">
                         <RadzenSelectBar Multiple="true" Data="@AllRoles" @bind-Value="@selectedRoles" TextProperty="Name" ValueProperty="Id" Style="flex-wrap: wrap; max-width: 100%;"/>
                     </RadzenFormField>
                 </RadzenFieldset>
@@ -208,19 +207,20 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
     </RadzenStack>
 </RadzenTemplateForm>
 
+
 @code {
     [Parameter] public int? id { get; set; }
     public User CurrentUser { get; set; } = new();
-    public List<string> validationErrors = new List<string>();
     private string? Message;
     RadzenUpload upload;
-    public List<string> AllRoles { get; set; } = new List<string>();
+    public List<string> AllRoles { get; set; } = new();
 
     IEnumerable<string> selectedRoles = new List<string>();
 
     protected override async Task OnInitializedAsync()
     {
-        var user = await UserManager.FindByIdAsync(id.ToString());
+        // var user = await UserManager.FindByIdAsync(id.ToString());
+        var user = await UserService.GetUserById(id);
         if (id != null)
             CurrentUser = user;
         var roles = RoleManager.Roles.Select(r => r.Name).ToList();
@@ -236,7 +236,7 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
             }
         }
     }
-    
+
     private async Task RolesUpdate()
     {
         var roles = await UserManager.GetRolesAsync(CurrentUser);
@@ -249,33 +249,65 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
 
     async Task Submit(User args)
     {
-        validationErrors.Clear();
-        if (CurrentUser.UserName == null || CurrentUser.UserName.Trim() == "")
-            validationErrors.Add("Юзернейм является обязательным полем.");
-
-        if (validationErrors.Any())
-        {
-            return;
-        }
-
         try
         {
-            int adminId = GetCurrentUserId();
+            if (CurrentUser.DateOfBirth.HasValue)
+            {
+                CurrentUser.DateOfBirth = DateTime.SpecifyKind(CurrentUser.DateOfBirth.Value, DateTimeKind.Utc);
+            }
+
+            if (CurrentUser.LockoutEnd.HasValue)
+            {
+                CurrentUser.LockoutEnd = CurrentUser.LockoutEnd.Value.ToUniversalTime();
+            }
+
+            // Простая валидация данных формы
+            var validationContext = new ValidationContext(args, serviceProvider: null, items: null);
+            var validationResults = new List<ValidationResult>();
+            bool isValid = Validator.TryValidateObject(args, validationContext, validationResults, validateAllProperties: true);
+
+            if (!isValid)
+            {
+                // Если данные не прошли валидацию, отобразить сообщения об ошибках
+                Message = string.Join("\n", validationResults.Select(r => r.ErrorMessage));
+                return;
+            }
+
+            if (string.IsNullOrEmpty(args.UserName) || args.UserName.Length < 5)
+            {
+                Message = "Ошибка: Юзернейм должен содержать не менее 5 символов.";
+                return;
+            }
+
+            if (string.IsNullOrEmpty(args.PasswordHash) || args.PasswordHash.Length < 5)
+            {
+                Message = "Ошибка: Пароль должен содержать не менее 5 символов.";
+                return;
+            }
+
+            if (string.IsNullOrEmpty(args.Email) || args.Email.Length < 5)
+            {
+                Message = "Ошибка: Почта должна содержать не менее 5 символов.";
+                return;
+            }
+
+            // Остальная логика обработки формы при успешной валидации
             if (id is not null)
             {
                 // Обновляем данные пользователя
-                await UserService.UpdateUser(CurrentUser, (int)id, adminId);
+                await UserService.UpdateUser(CurrentUser, (int)id);
                 await RolesUpdate();
 
                 Message = "Данные пользователя успешно обновлены.";
             }
             else
             {
-                await UserService.AddUser(CurrentUser, adminId);
+                await UserService.AddUser(CurrentUser);
 
                 Message = "Новый пользователь успешно добавлен.";
             }
 
+            Message = id != null ? "Данные пользователя успешно обновлены." : "Новый пользователь успешно добавлен.";
             NavigationManager.NavigateTo("/users");
         }
         catch (Exception ex)
@@ -319,16 +351,5 @@ else if (NavigationManager.Uri.Contains("/user/update/{id:int}"))
         Console.WriteLine($"{args.Message}");
     }
 
-    int GetCurrentUserId()
-    {
-        var userIdClaim = HttpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier);
-        Console.WriteLine("ID: " + userIdClaim);
-        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
-        {
-            return userId;
-        }
-
-        return 0;
-    }
 
 }

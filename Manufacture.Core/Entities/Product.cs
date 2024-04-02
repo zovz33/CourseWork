@@ -1,12 +1,12 @@
-using System.ComponentModel.DataAnnotations;
 
 namespace Manufacture.Core.Entities;
 
-public class Product
-{
-    public int Id { get; set; }
-    [Required]
-    public string? Name { get; set; }
-    [Required]
+public class Product : EntityBase // Продукт существующий
+{ 
+    
     public decimal? Amount { get; set; }
+    public decimal? Price { get; set; }
+    
+    public int? ProductToOrderId { get; set; } // Связь с ProductToOrder(FK)
+    public virtual ProductToOrder ProductToOrder { get; set; }
 }

@@ -10,7 +10,7 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
     {
         builder.HasKey("Id");
         builder.HasIndex("Id").IsUnique();
-        //builder.HasIndex("Name").IsUnique();
+        builder.HasIndex("Name").IsUnique();
         builder.Property(u => u.Name).HasMaxLength(20).IsRequired();
         builder.Property(u => u.Description).HasMaxLength(256);
 

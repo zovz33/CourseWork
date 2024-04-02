@@ -1,9 +1,6 @@
 ﻿@page "/Account/LoginWith2fa"
-
-@using System.ComponentModel.DataAnnotations
-@using Manufacture.Core.Entities.Identity
 @using Microsoft.AspNetCore.Identity
-@using Manufacture.Infrastructure.Data
+@using System.ComponentModel.DataAnnotations
 
 @inject SignInManager<User> SignInManager
 @inject UserManager<User> UserManager
@@ -49,11 +46,11 @@
     private string? message;
     private User user = default!;
 
-    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+    [SupplyParameterFromForm] private InputModel Input { get; } = new();
 
-    [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
+    [SupplyParameterFromQuery] private string? ReturnUrl { get; }
 
-    [SupplyParameterFromQuery] private bool RememberMe { get; set; }
+    [SupplyParameterFromQuery] private bool RememberMe { get; }
 
     protected override async Task OnInitializedAsync()
     {

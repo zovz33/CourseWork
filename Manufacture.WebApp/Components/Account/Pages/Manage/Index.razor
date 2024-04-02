@@ -1,162 +1,164 @@
 ﻿@page "/Account/Manage"
-
-@using System.ComponentModel.DataAnnotations
-@using Manufacture.Core.Entities.Identity
 @using Microsoft.AspNetCore.Identity
-@using Manufacture.Infrastructure.Data
 @using Manufacture.Infrastructure.Services
-
+@rendermode @(new InteractiveServerRenderMode(false)) 
 @inject UserManager<User> UserManager
 @inject SignInManager<User> SignInManager
 @inject IdentityUserAccessor UserAccessor
-@inject IdentityRedirectManager RedirectManager
-
+@inject IdentityRedirectManager RedirectManager 
 <PageTitle>Профиль</PageTitle>
 
 <h3>Профиль</h3>
-<StatusMessage/>
 
-<div class="row">
-    <div class="col-md-6">
-        <EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator/>
-            <ValidationSummary class="text-danger" role="alert"/>
-            <div class="form-floating mb-3">
-                <input type="text" value="@username" class="form-control" placeholder="Введите ваш юзернейм." disabled/>
-                <label for="username" class="form-label">Юзернейм</label>
-            </div>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.PhoneNumber" class="form-control" placeholder="Введите ваш номер телефона."/>
-                <label for="phone-number" class="form-label">Номер телефона</label>
-                <ValidationMessage For="() => Input.PhoneNumber" class="text-danger"/>
-            </div>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Address" class="form-control" placeholder="Введите ваш Адресс."/>
-                <label for="address" class="form-label">Адресс</label>
-            </div>
-            <div class="form-floating mb-3">
-                <InputDate @bind-Value="Input.DateOfBirth" class="form-control" placeholder="Введите вашу дату рождения."/>
-                <label for="dateOfBirth" class="form-label">Дата рождения</label>
-            </div>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.FirstName" class="form-control" placeholder="Введите ваше имя."/>
-                <label for="firstName" class="form-label">Имя</label>
-            </div>
-            <div class="form-floating mb-3">
+@if (CurrentUser == null)
+{
+    <p>Loading profile...</p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-6">
+            <RadzenTemplateForm Data="@CurrentUser" Submit="@((User args) => { Submit(args); })">
+                <RadzenRow>
+                    <RadzenColumn>
+                        <RadzenFieldset Text="Основная информация">
+                            <RadzenStack Gap="1rem">
+                                <RadzenFormField Text="Юзернейм" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="badge"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenTextBox @bind-Value="CurrentUser.UserName"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                                <RadzenFormField Text="Имя" Variant="Variant.Outlined">
+                                    <Start>
+                                        <RadzenIcon Icon="assignment_ind"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenTextBox @bind-Value="@CurrentUser.FirstName" Style="width: 100%"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                                <RadzenFormField Text="Отчество" Variant="Variant.Outlined">
+                                    <Start>
+                                        <RadzenIcon Icon="assignment_ind"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenTextBox @bind-Value="@CurrentUser.MiddleName" Style="width: 100%"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                                <RadzenFormField Text="Фамилия" Variant="Variant.Outlined">
+                                    <Start>
+                                        <RadzenIcon Icon="assignment_ind"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenTextBox @bind-Value="@CurrentUser.LastName" Style="width: 100%"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                                <RadzenFormField Text="Выберите пол" Variant="Variant.Outlined">
+                                    <Start>
+                                        <RadzenIcon Icon="wc"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <InputSelect @bind-Value="@CurrentUser.Gender" Style="height: 40px;">
+                                            <option disabled value="null" hidden="hidden">Не выбрано</option>
+                                            <option value="M">Мужчина</option>
+                                            <option value="F">Женщина</option>
+                                        </InputSelect>
+                                    </ChildContent>
+                                </RadzenFormField>
+                                <RadzenFormField Text="Адрес" Variant="Variant.Outlined">
+                                    <Start>
+                                        <RadzenIcon Icon="send"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenTextArea @bind-Value="@CurrentUser.Address" Style="width: 100%"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                                <RadzenFormField Text="Домашний телефон" Variant="Variant.Outlined">
+                                    <Start>
+                                        <RadzenIcon Icon="contact_phone"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenNumeric @bind-Value="CurrentUser.HomePhone" ShowUpDown="false" Placeholder="Введите домашний телефон" class="form-control"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                                <RadzenFormField Text="Мобильный телефон" Variant="Variant.Outlined">
 
-                <InputText @bind-Value="Input.MiddleName" class="form-control" placeholder="Введите ваше отчество."/>
-                <label for="middleName" class="form-label">Отчество</label>
-            </div>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.LastName" class="form-control" placeholder="Введите вашу фамилию."/>
-                <label for="lastName" class="form-label">Фамилия</label>
-            </div>
-            <div class="form-floating mb-3">
-                <InputSelect class="form-select" @bind-Value="Input.Gender">
-                    <option disabled value="null" hidden="hidden">Не выбрано</option>
-                    <option value="M">Мужчина</option>
-                    <option value="F">Женщина</option>
-                </InputSelect>
-                <label for="gender" class="form-label">Пол</label>
-            </div>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.HomePhone" class="form-control" placeholder="Введите ваш домашний телефон."/>
-                <label for="homePhone" class="form-label">Домашний телефон</label>
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Сохранить</button>
-        </EditForm>
+                                    <Start>
+                                        <RadzenIcon Icon="smartphone"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenMask Mask="+* (***) ***-**-**" CharacterPattern="[0-9]" Placeholder="+0 (000) 000-00-00" class="form-control" @bind-Value="@CurrentUser.PhoneNumber" Style="width: 100%;" aria-label="Phone"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+
+                                <RadzenFormField Text="Дата рождения" Variant="Variant.Outlined">
+                                    <Start>
+                                        <RadzenIcon Icon="cake"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenDatePicker @bind-Value=@CurrentUser.DateOfBirth DateFormat="MM/dd/yyyy" id="DateOfBirth" InitialViewDate="DateTime.Now.AddYears(-20)" Min="DateTime.Today.AddYears(-90)" Max="DateTime.Today.AddYears(-10)"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                                @if (userRoles.Any())
+                                {
+                                    <RadzenFormField Text="Роли пользователя" AllowFloatingLabel="false" Variant="Variant.Outlined" Style="margin-top: 0.5rem;">
+                                        <RadzenSelectBar Data="@userRoles" @bind-Value="userRoles" TextProperty="Name" ValueProperty="Id" Style="flex-wrap: wrap; max-width: 100%;" Multiple="true" Disabled="true"/>
+                                    </RadzenFormField>
+                                }
+                                else
+                                {
+                                    <p>У пользователя нет ролей.</p>
+                                }
+                                <div class="form-group">
+                                    <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Сохранить" Style="width: 100%"/>
+                                </div>
+                            </RadzenStack>
+                        </RadzenFieldset>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenTemplateForm>
+        </div>
     </div>
-</div>
-@inject ApplicationDbContext _context;
+}
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IUserService UserService
+@inject IRoleService RoleService
 
 @code {
-
     private User user = default!;
-    private string? username;
+    public User CurrentUser { get; set; }
     [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
-    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+
+    IEnumerable<string> userRoles = new List<string>();
 
     protected override async Task OnInitializedAsync()
     {
-        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
-        username = await UserManager.GetUserNameAsync(user);
-        Input.PhoneNumber ??= user.PhoneNumber;
-        Input.Address ??= user.Address;
-        Input.DateOfBirth ??= user.DateOfBirth;
-        Input.FirstName ??= user.FirstName;
-        Input.MiddleName ??= user.MiddleName;
-        Input.LastName ??= user.LastName;
-        Input.Gender ??= user.Gender;
-        Input.HomePhone ??= user.HomePhone;
+        var user = await UserService.GetCurrentUserAsync();
+        if (user != null)
+        {
+            CurrentUser = user;
+            userRoles = await UserManager.GetRolesAsync(user);
+        }
+        else
+        {
+            Console.Error.WriteLine("Пользователь не найден.");
+            RedirectManager.RedirectToCurrentPageWithStatus("Произошла ошибка при загрузке профиля.", HttpContext);
+        }
     }
 
-    private async Task OnValidSubmitAsync()
+    async Task Submit(User args)
     {
-        if (Input.PhoneNumber != user.PhoneNumber)
+        if (CurrentUser.DateOfBirth.HasValue)
         {
-            var result = await UserManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
-            if (!result.Succeeded)
-            {
-                RedirectManager.RedirectToCurrentPageWithStatus("Ошибка: не удалось сохранить номер телефона.", HttpContext);
-            }
+            CurrentUser.DateOfBirth = DateTime.SpecifyKind(CurrentUser.DateOfBirth.Value, DateTimeKind.Utc);
         }
 
-        if (Input.Address != user.Address)
-        {
-            user.Address = Input.Address;
-        }
-
-        if (Input.DateOfBirth != user.DateOfBirth)
-        {
-            user.DateOfBirth = Input.DateOfBirth;
-        }
-
-        if (Input.FirstName != user.FirstName)
-        {
-            user.FirstName = Input.FirstName;
-        }
-
-        if (Input.MiddleName != user.MiddleName)
-        {
-            user.MiddleName = Input.MiddleName;
-        }
-
-        if (Input.LastName != user.LastName)
-        {
-            user.LastName = Input.LastName;
-        }
-
-        if (Input.Gender != user.Gender)
-        {
-            user.Gender = Input.Gender;
-        }
-
-        if (Input.HomePhone != user.HomePhone)
-        {
-            user.HomePhone = Input.HomePhone;
-        }
-
-        _context.Update(user);
-        await _context.SaveChangesAsync();
+        await UserService.UpdateUser(CurrentUser, CurrentUser.Id);
         await SignInManager.RefreshSignInAsync(user);
         RedirectManager.RedirectToCurrentPageWithStatus("Ваш профиль успешно обновлен!", HttpContext);
     }
 
-    private sealed class InputModel
-    {
-        [Phone]
-        [Display(Name = "Номер телефона")]
-        public string? PhoneNumber { get; set; }
-
-        public string? MobilePhone { get; set; }
-        public string? FirstName { get; set; }
-        public string? MiddleName { get; set; }
-        public string? LastName { get; set; }
-        [Display(Name = "Выберите пол")] public string? Gender { get; set; }
-        public string? Address { get; set; }
-        public string? HomePhone { get; set; }
-        public DateTime? DateOfBirth { get; set; }
-        public string? ProfileImage { get; set; }
-    }
 
 }

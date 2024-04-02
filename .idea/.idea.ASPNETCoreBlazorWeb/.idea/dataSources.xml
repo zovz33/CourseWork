@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="CourseManufacture@LENOVO" uuid="4c9df1dc-d6f3-4b6d-98c9-88487fadaffc">
-      <driver-ref>sqlserver.jb</driver-ref>
-      <synchronize>true</synchronize>
-      <configured-by-url>true</configured-by-url>
-      <jdbc-driver>com.jetbrains.jdbc.sqlserver.SqlServerDriver</jdbc-driver>
-      <jdbc-url>Server=LENOVO\SQLEXPRESS01;Database=CourseManufacture;Trusted_Connection=True;MultipleActiveResultSets=true</jdbc-url>
-      <working-dir>$ProjectFileDir$</working-dir>
-    </data-source>
     <data-source source="LOCAL" name="Manufacture@localhost" uuid="5eb2c0e0-d7d1-46ca-91f1-4f80ea29aa6d">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>

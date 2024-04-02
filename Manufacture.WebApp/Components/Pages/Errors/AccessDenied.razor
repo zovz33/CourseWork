@@ -1,19 +1,83 @@
 @page "/AccessDenied"
-@using Microsoft.AspNetCore.Http.Extensions
 @using System.Web
 @using System.Globalization
 @inject NavigationManager NavigationManager
+
+    <style>
+ .container{
+ align-self: center;
+        align-content: center;
+        alignment-baseline: center;
+        vertical-align: center;
+        align-items: center;
+        vertical-align: center;
+        text-align: center;
+ }
+
+    .title {
+      margin: 0 0 1rem;
+      font-weight: 500;
+      font-size: 2rem;
+    }
+
+    .message {
+      margin-bottom: 2rem;
+      font-size: 1.25rem;
+      color: #727272;
+    }
+
+    .button {
+      padding: 0 1.5rem 0 .75rem;
+      border-radius: .3rem;
+      display: inline-block;
+      background-color: #009e66;
+      color: #fff;
+      text-decoration: none;
+      font-size: .875rem;
+      font-weight: 500;
+      line-height: 2.5rem;
+    }
+ 
+
+    @@media screen and (min-width:480px) {
+      .title {
+        font-size: 2.5rem;
+        font-weight: 700;
+      }
+
+      .message {
+        font-size: 1.5rem;
+        font-weight: 300;
+      }
+
+      .message .br {
+        display: block;
+      }
+
+      .button {
+        line-height: 2.75rem;
+      }
+    }
+  </style>
 <AuthorizeView>
     <NotAuthorized>
-        <p>Вы не авторизованы, поэтому у вас нет доступа к странице @PageName.</p>
+        <div class="container">
+        <p class="title">Вы не авторизованы, поэтому у вас нет доступа к странице @PageName.</p>
         @* <p>Права, нужные для просмотра страницы @PageName: @RequiredPermission</p> *@
-        <a href="/" class="w-100 btn btn-lg btn-primary">Авторизоваться</a>
+        <a href="/">
+            <RadzenButton Text="Основная" Icon="arrow_back" Variant="Variant.Filled" Shade="Shade.Lighter" Style="background-color: #009e66; color: white; font-size: 1.5rem; padding: 20px"/>
+        </a>
+        </div>
     </NotAuthorized>
     <Authorized>
-        <h3>@context.User.Identity?.Name, доступ к странице @PageName запрещен</h3>
-        <p>У вас нет необходимых разрешений для просмотра этой страницы.</p>
+        <div class="container">
+        <h3 class="title">@context.User.Identity?.Name, доступ к странице @PageName запрещен</h3>
+        <p class="message">У вас нет необходимых разрешений для просмотра этой страницы.</p>
         @* <p>Права, нужные для просмотра страницы: @RequiredPermission</p> *@
-        <a href="/" class="w-100 btn btn-lg btn-primary">Домой</a>
+        <a href="/">
+            <RadzenButton Text="Основная" Icon="arrow_back" Variant="Variant.Filled" Shade="Shade.Lighter" Style="background-color: #009e66; color: white; font-size: 1.5rem; padding: 20px"/>
+        </a>
+        </div>
     </Authorized>
 </AuthorizeView>
 
@@ -22,7 +86,7 @@
     [Parameter] public string RequiredPermission { get; set; }
 
     [Parameter] public string PageName { get; set; }
- 
+
     protected override void OnInitialized()
     {
         var uri = new Uri(NavigationManager.Uri);

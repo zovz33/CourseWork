@@ -1,20 +1,15 @@
 ﻿@page "/roles"
-
-@using Manufacture.Core.Entities.Identity
-@using Manufacture.BusinessLogic.Interfaces
-@using Manufacture.Infrastructure.Services
-@using Microsoft.AspNetCore.Identity
-@using System.Security.Claims
 @using System.Reflection
-@using System.ComponentModel
-@using Manufacture.BusinessLogic
+@using Manufacture.BusinessLogic.Interfaces
 @using Manufacture.Core.Entities
-@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@using Manufacture.Core.Entities.Identity
+@using Microsoft.AspNetCore.Identity
+@using System.ComponentModel
 @inject RoleManager<Role> RoleManager
 @inject NavigationManager NavigationManager
 @inject IRoleService RoleService; 
 @inject IUserService UserService; 
-@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@rendermode @(new InteractiveServerRenderMode(false))
 @attribute [StreamRendering]
 @* @attribute [Authorize(Policy = "Permissions10")] *@
 <PageTitle>Роли</PageTitle>
@@ -32,7 +27,7 @@ else
     <RadzenButton Icon="add" class="rz-ripple" Click="@(CreateRole)" ButtonStyle="ButtonStyle.Success" Style="margin: 15px"/>
     <div style="display: flex; flex-direction: column; margin: 16px;max-width: 95rem">
 
-        <RadzenDataGrid Data="@RolesL" TItem="Role" AllowColumnResize="true" GridLines="Radzen.DataGridGridLines.Vertical"
+        <RadzenDataGrid Data="@RolesL" TItem="Role" AllowColumnResize="true" GridLines="DataGridGridLines.Vertical"
                         AllowColumnReorder="false" PagerHorizontalAlign="HorizontalAlign.Center"
                         AllowPaging="true" AllowFiltering="true" FilterMode="FilterMode.Simple"
                         FilterPopupRenderMode="PopupRenderMode.OnDemand" IsNullText="-" ColumnWidth="120"
@@ -59,22 +54,22 @@ else
                     <Template Context="role">
                         @if (rolePermissions.TryGetValue(role.Id, out var permissions) && permissions.Any())
                         {
-                            <RadzenDropDown Data="@permissions.GroupBy(p => p.Split('.')[0]).Select(g => new { GroupName = GetGroupName(g.Key), Permissions = g.Select(p => p.Split('.')[1]) })" 
-                                                        TextProperty="GroupName" ValueProperty="Permissions" TValue="string" ReadOnly="true"
-                                                        AllowClear="false" Placeholder="Просмотр прав роли" AllowSelectAll="false"
-                                                        Style="width: 100%; max-width: 400px;text-align-all: center;text-align: center;align-self: center;align-content: center;">
-                                            <Template>
-                                                <div>
-                                                    <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: bold;">@context.GroupName</RadzenText>
-                                                    <div>
-                                                        @foreach (var p in context.Permissions)
-                                                        {
-                                                            <RadzenText TagName="TagName.H5">@p</RadzenText>
-                                                        }
-                                                    </div>
-                                                </div>
-                                            </Template>
-                                        </RadzenDropDown>
+                            <RadzenDropDown Data="@permissions.GroupBy(p => p.Split('.')[0]).Select(g => new { GroupName = GetGroupName(g.Key), Permissions = g.Select(p => p.Split('.')[1]) })"
+                                            TextProperty="GroupName" ValueProperty="Permissions" TValue="string" ReadOnly="true"
+                                            AllowClear="false" Placeholder="Просмотр прав роли" AllowSelectAll="false"
+                                            Style="width: 100%; max-width: 400px;text-align-all: center;text-align: center;align-self: center;align-content: center;">
+                                <Template>
+                                    <div>
+                                        <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: bold;">@context.GroupName</RadzenText>
+                                        <div>
+                                            @foreach (var p in context.Permissions)
+                                            {
+                                                <RadzenText TagName="TagName.H5">@p</RadzenText>
+                                            }
+                                        </div>
+                                    </div>
+                                </Template>
+                            </RadzenDropDown>
                         }
                         else
                         {
@@ -86,24 +81,24 @@ else
                 <RadzenDataGridColumn TItem="Role" Title="Создание" Sortable="false" Filterable="false">
                     <Template Context="role">
                         <RadzenText TextStyle="TextStyle.Subtitle2" class="mb-0">
-                            @* @(role.CreatedBy.HasValue && CreatedByNames.TryGetValue(role.CreatedBy.Value, out string createdByName) ? createdByName : "Система") *@
-                        </RadzenText>
+                            @((role.CreatedBy.HasValue && role.CreatedBy.Value != 0 && CreatedByNames.TryGetValue(role.CreatedBy.Value, out string createdByName)) ? createdByName : "Система")
+                            </RadzenText>
                         <RadzenText TextStyle="TextStyle.Caption">@role.CreatedDateTime</RadzenText>
                     </Template>
                     <FooterTemplate>
-                        Последнее:<b>@String.Format("{0:d}", RolesL.OrderByDescending(o => o.CreatedDateTime).FirstOrDefault()?.CreatedDateTime)</b>
+                        Последнее:<b>@string.Format("{0:d}", RolesL.OrderByDescending(o => o.CreatedDateTime).FirstOrDefault()?.CreatedDateTime)</b>
                     </FooterTemplate>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="Role" Title="Редактирование" Sortable="false" Filterable="false">
                     <Template Context="role">
                         <RadzenText TextStyle="TextStyle.Subtitle2" class="mb-0">
-                            @* @(role.UpdatedBy.HasValue && UpdatedByNames.TryGetValue(role.UpdatedBy.Value, out string updatedByName) ? updatedByName : "Система") *@
+                            @((role.UpdatedBy.HasValue && role.UpdatedBy.Value != 0 && UpdatedByNames.TryGetValue(role.UpdatedBy.Value, out string updatedByName)) ? updatedByName : "Система")
                         </RadzenText>
 
                         <RadzenText TextStyle="TextStyle.Caption">@role.UpdatedDateTime</RadzenText>
                     </Template>
                     <FooterTemplate>
-                        Последнее:<b>@String.Format("{0:d}", RolesL.OrderByDescending(o => o.UpdatedDateTime).FirstOrDefault()?.UpdatedDateTime)</b>
+                        Последнее:<b>@string.Format("{0:d}", RolesL.OrderByDescending(o => o.UpdatedDateTime).FirstOrDefault()?.UpdatedDateTime)</b>
                     </FooterTemplate>
                 </RadzenDataGridColumn>
             </Columns>
@@ -114,22 +109,30 @@ else
 @inject UserManager<User> UserManager
 
 @code {
-    private List<Role> RolesL;
-    private Dictionary<int, string> CreatedByNames = new Dictionary<int, string>();
-    private Dictionary<int, string> UpdatedByNames = new Dictionary<int, string>();
-    private Dictionary<int, List<string>> rolePermissions = new Dictionary<int, List<string>>();
-    private Dictionary<string, string> GlobalPermissions { get; set; } = new Dictionary<string, string>();
-
+    private List<Role> RolesL; 
+    private readonly Dictionary<int, List<string>> rolePermissions = new();
+    private Dictionary<string, string> GlobalPermissions { get; set; } = new();
+    private Dictionary<int, string> CreatedByNames = new();
+    private Dictionary<int, string> UpdatedByNames = new();
     protected override async Task OnInitializedAsync()
     {
         GlobalPermissions = await RoleService.GetGlobalPermissions();
-
+        
         RolesL = await RoleService.GetRoles();
-
+        
         foreach (var role in RolesL)
         {
             rolePermissions[role.Id] = await RoleService.GetPermissionsByRoleIdAsync(role.Id);
         }
+
+        var users = await UserService.GetUsers(); 
+        foreach (var user in users)
+        {
+            CreatedByNames[user.Id] = user.UserName;
+            UpdatedByNames[user.Id] = user.UserName;
+        }
+        
+         
     }
 
     private void CreateRole()

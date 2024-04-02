@@ -1,6 +1,4 @@
-﻿@using Manufacture.Core.Entities.Identity
-@using Microsoft.AspNetCore.Identity
-@implements IDisposable 
+﻿@implements IDisposable 
 @inject NavigationManager NavigationManager
 
 <RadzenSidebar Responsive="false" Style="width: max-content">
@@ -8,10 +6,14 @@
         <RadzenPanelMenuItem Text="Основная" Icon="home" Path="/"/>
         <AuthorizeView>
             <Authorized>
-                <RadzenPanelMenuItem Text="Dashboard" Icon="dashboard" />
+                <RadzenPanelMenuItem Text="Dashboard" Icon="dashboard" Path="dashboard"/>
                 <RadzenPanelMenuItem Text="Пользователи" Icon="group" Path="users"/>
-                <RadzenPanelMenuItem Text="Роли" Icon="add_moderator" Path="roles" />
-                <RadzenPanelMenuItem Text="Личный кабинет" Icon="account_box" Path="account/manage" />
+                <RadzenPanelMenuItem Text="Роли" Icon="add_moderator" Path="roles"/>
+                <RadzenPanelMenuItem Text="Продукция на складе" Icon="cooking" Path="products"/>
+                <RadzenPanelMenuItem Text="Продукция для заказа" Icon="view_list" Path="orderproduct"/>
+                <RadzenPanelMenuItem Text="Заказы" Icon="orders" Path="orders"/>
+                <RadzenPanelMenuItem Text="Материалы" Icon="inventory" Path="materials"/>
+                <RadzenPanelMenuItem Text="Личный кабинет" Icon="account_box" Path="account/manage"/>
             </Authorized>
             <NotAuthorized>
                 <RadzenPanelMenuItem Text="Регистрация" Icon="app_registration" Path="Account/Register"/>
@@ -40,4 +42,5 @@
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
+
 }

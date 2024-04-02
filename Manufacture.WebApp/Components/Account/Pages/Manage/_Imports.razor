@@ -1,2 +1,6 @@
-﻿@layout ManageLayout
-@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+﻿@using Manufacture.BusinessLogic.Interfaces
+@layout ManageLayout
+@attribute [Authorize]
+@inject IUserService UserService;
+
+@using Microsoft.AspNetCore.Components

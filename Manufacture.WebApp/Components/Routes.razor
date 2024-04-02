@@ -1,17 +1,16 @@
 ﻿@using Manufacture.WebApp.Components.Account.Shared
-@using Manufacture.WebApp.Components.Pages.Errors
-
+@using Manufacture.WebApp.Components.Layout
 <Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
-        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
             <NotAuthorized>
-                <RedirectToLogin/>
+                <AccessDenied></AccessDenied>
             </NotAuthorized>
         </AuthorizeRouteView>
         <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
     </Found>
     <NotFound>
-        <Not-Found></Not-Found>
+        <NotFoundComponent></NotFoundComponent>
     </NotFound>
-    
+
 </Router>

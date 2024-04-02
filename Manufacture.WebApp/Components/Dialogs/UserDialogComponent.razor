@@ -1,4 +1,4 @@
-@using Manufacture.Core.Entities.Identity 
+@using Manufacture.Core.Entities.Identity
 <div>
     <dialog id="my-dialog" @onclose="OnClose" style="border:5px solid #0b5ed7; min-width:300px;">
         @if (ShowMainContent)
@@ -46,7 +46,7 @@
 
 @code {
     private bool ShowMainContent { get; set; } = true;
-    private bool ShowConfirmationContent { get; set; } = false;
+    private bool ShowConfirmationContent { get; set; }
     public string Title { get; set; } = "Добавить";
     [Parameter] public User User { get; set; } = new();
     [Parameter] public EventCallback<User> HandleAddUserEvent { get; set; }
@@ -63,7 +63,7 @@
 
     public void ClearUserContainer()
     {
-        User = new();
+        User = new User();
     }
 
     public void ChangeTitle(string title)
@@ -94,5 +94,5 @@
         ShowMainContent = true;
         ShowConfirmationContent = false;
     }
-}
 
+}
