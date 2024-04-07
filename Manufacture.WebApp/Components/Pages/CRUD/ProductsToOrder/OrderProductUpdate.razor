@@ -3,9 +3,9 @@
 @using Manufacture.Core.Entities
 @using Manufacture.BusinessLogic.Interfaces
 @inject IOrderProductService OrderProductService
+@inject IMaterialService MaterialService
 @inject NavigationManager NavigationManager
-@rendermode @(new InteractiveServerRenderMode(false))
-@attribute [StreamRendering]
+@rendermode @(new InteractiveServerRenderMode(false)) 
 
 @if (NavigationManager.Uri.Contains("/orderproduct/create"))
 {
@@ -35,7 +35,7 @@ else
                             <div>
                                 <RadzenFormField Text="Название продукта на заказ" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
                                     <Start>
-                                        <RadzenIcon Icon="cooking"/>
+                                        <RadzenIcon Icon="pallet"/>
                                     </Start>
                                     <ChildContent>
                                         <RadzenTextBox @bind-Value="CurrentEntity.Name"/>
@@ -53,6 +53,19 @@ else
                                 </RadzenFormField>
                             </div>
 
+                            <div class="col-md-12">
+                                <RadzenFieldset Text="Материалы">
+                                    <RadzenSelectBar @bind-Value="SelectedMaterials" Data="@MaterialsName" TextProperty="Name" ValueProperty="Id" Multiple="true" Style="margin-top: 0.5rem;" />
+                                </RadzenFieldset>
+                            </div>
+
+                            <div class="col-md-4 p-3">
+                                <RadzenCard Style="width: 500px">
+                                    <RadzenUpload @ref="upload" ChooseText="Выбрать фото продукта" Icon="add_photo_alternate" Auto="false" Multiple="true" Url="upload/multiple" Change=@(args => OnChange(args, "Manual Upload"))
+                                                  id="ProfileImage" InputAttributes="@(new Dictionary<string, object> { { "aria-label", "select file" } })" Progress=@(args => OnProgress(args, "Manual Upload")) class="w-100"/>
+                                    <RadzenButton Text="Сохранить фото" Click="@(args => upload.Upload())"/>
+                                </RadzenCard>
+                            </div>
                         </RadzenRow>
                     </RadzenStack>
                 </RadzenFieldset>
@@ -69,14 +82,22 @@ else
     [Parameter] public int? id { get; set; }
     private string? Message;
     private ProductToOrder CurrentEntity { get; set; } = new ProductToOrder();
-
+    RadzenUpload upload;
+    private IEnumerable<RawMaterial> MaterialsEnum { get; set; }
+    private IEnumerable<RawMaterial> SelectedMaterials { get; set; } = new List<RawMaterial>();
+    private IEnumerable<string> MaterialsName   { get; set; }
     protected override async Task OnInitializedAsync()
     {
         if (id.HasValue)
         {
             CurrentEntity = await OrderProductService.GetByIdAsync(id.Value);
+            SelectedMaterials = CurrentEntity.Material.ToList();
         }
+
+        MaterialsEnum = await MaterialService.GetAllMaterialsAsync();
+        MaterialsName = MaterialsEnum.Select(m => m.Name).ToList();
     }
+
 
     private async Task Submit(ProductToOrder args)
     {
@@ -105,14 +126,16 @@ else
             }
 
             if (!id.HasValue)
-            {
-                await OrderProductService.AddAsync(CurrentEntity);
+            { 
+                CurrentEntity.Material = SelectedMaterials.ToList();
+                await OrderProductService.AddAsync(CurrentEntity); 
                 Message = "Материал успешно создан.";
             }
             else
             {
                 if (CurrentEntity != null)
                 {
+                    CurrentEntity.Material = SelectedMaterials.ToList();
                     await OrderProductService.UpdateAsync(CurrentEntity);
                     Message = "Материал успешно обновлен.";
                 }
@@ -133,6 +156,29 @@ else
     private void Cancel()
     {
         NavigationManager.NavigateTo("/orderproduct");
+    }
+
+    void OnProgress(UploadProgressArgs args, string name)
+    {
+        Console.WriteLine($"{args.Progress}% '{name}' / {args.Loaded} of {args.Total} bytes.");
+
+        if (args.Progress == 100)
+        {
+            foreach (var file in args.Files)
+            {
+                Console.WriteLine($"Uploaded: {file.Name} / {file.Size} bytes");
+            }
+        }
+    }
+
+    void OnChange(UploadChangeEventArgs args, string name)
+    {
+        foreach (var file in args.Files)
+        {
+            Console.WriteLine($"File: {file.Name} / {file.Size} bytes");
+        }
+
+        Console.WriteLine($"{name} changed");
     }
 
 }

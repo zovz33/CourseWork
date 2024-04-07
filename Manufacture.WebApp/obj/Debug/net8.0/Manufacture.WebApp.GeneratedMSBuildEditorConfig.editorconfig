@@ -182,12 +182,28 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDUlVEXE1hdGVyaWFsc1xNYXRlcmlhbFVwZGF0ZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/Projects/dotnet/ASPNETCoreBlazorWeb/Manufacture.WebApp/Components/Pages/CRUD/Orders/Orders.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDUlVEXE9yZGVyc1xPcmRlcnMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Projects/dotnet/ASPNETCoreBlazorWeb/Manufacture.WebApp/Components/Pages/CRUD/Orders/OrderUpdate.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDUlVEXE9yZGVyc1xPcmRlclVwZGF0ZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/Projects/dotnet/ASPNETCoreBlazorWeb/Manufacture.WebApp/Components/Pages/CRUD/ProductsToOrder/OrderProduct.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDUlVEXFByb2R1Y3RzVG9PcmRlclxPcmRlclByb2R1Y3QucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Projects/dotnet/ASPNETCoreBlazorWeb/Manufacture.WebApp/Components/Pages/CRUD/ProductsToOrder/OrderProductUpdate.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDUlVEXFByb2R1Y3RzVG9PcmRlclxPcmRlclByb2R1Y3RVcGRhdGUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Projects/dotnet/ASPNETCoreBlazorWeb/Manufacture.WebApp/Components/Pages/CRUD/Products/Products.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDUlVEXFByb2R1Y3RzXFByb2R1Y3RzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Projects/dotnet/ASPNETCoreBlazorWeb/Manufacture.WebApp/Components/Pages/CRUD/Products/ProductUpdate.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDUlVEXFByb2R1Y3RzXFByb2R1Y3RVcGRhdGUucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Projects/dotnet/ASPNETCoreBlazorWeb/Manufacture.WebApp/Components/Pages/CRUD/Roles/Roles.razor]

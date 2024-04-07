@@ -1,0 +1,132 @@
+@page "/orders"
+@using Manufacture.Core.Entities
+@using Manufacture.BusinessLogic.Interfaces
+@inject NavigationManager NavigationManager
+@rendermode @(new InteractiveServerRenderMode(false))
+@attribute [StreamRendering]
+
+<h1>Продукция</h1>
+
+@if (OrdersL == null)
+{
+    <p>
+        <em>Загрузка...</em>
+    </p>
+}
+else
+{
+    <RadzenButton Icon="add" class="rz-ripple" Click="@Create" ButtonStyle="ButtonStyle.Success" Style="margin: 15px"/>
+    <div style="display: flex; flex-direction: column; margin: 16px;max-width: 95rem">
+        <RadzenDataGrid Data="@OrdersL" TItem="Order" AllowColumnResize="true"
+                        AllowColumnReorder="false" PagerHorizontalAlign="HorizontalAlign.Center"
+                        AllowPaging="true" AllowFiltering="true" FilterMode="FilterMode.Simple"
+                        ColumnWidth="200px" FilterPopupRenderMode="PopupRenderMode.OnDemand" IsNullText="-"
+                        AllowSorting="true" AllowMultiColumnSorting="true" ShowMultiColumnSortingIndex="true"
+                        Style="width: 100%; margin: 0 15px; max-width: 100%; border-radius: 16px;">
+            <Columns>
+                <RadzenDataGridColumn TItem="Order" Property="Id" Frozen="true" Width="80px" Title="#" TextAlign="TextAlign.Center" Sortable="true" Filterable="true"/>
+                <RadzenDataGridColumn TItem="Order" Sortable="false" Filterable="false" Frozen="true" Width="120px" FrozenPosition="FrozenColumnPosition.Right">
+                    <Template Context="entity">
+                        <RadzenButton class="rz-ripple" Icon="edit" ButtonStyle="ButtonStyle.Primary" Click="@(() => Edit(entity.Id))" Style="margin-right: 8px;"/>
+                        <RadzenButton class="rz-ripple" Icon="delete" ButtonStyle="ButtonStyle.Danger" Click="@(() => Delete(entity.Id))"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Order" Property="ImageUrl" Width="70px" Title="Картинка" Sortable="false" Filterable="false" TextAlign="TextAlign.Center">
+                    <Template Context="entity">
+                        <RadzenImage Path="https://avatars.dzeninfra.ru/get-zen_doc/5222751/pub_60ec90128d5a52195b39f1ff_60ecb0ea1b39f163f0a564ab/scale_1200" style="width: 40px; height: 40px; align-content: center;border-radius: 14px; border-style: solid;border-width: 2px;border-color: black; margin-right: 4px; float: left;"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Order" Property="ProductToOrder.Name" Title="Название"/>
+                <RadzenDataGridColumn TItem="Order" Property="ProductToOrder.Description" Title="Описание" Sortable="false" Filterable="true"/>
+
+                <RadzenDataGridColumn TItem="Order" Property="Quantity" Title="Количество" Sortable="true" Filterable="false" TextAlign="TextAlign.Center"/>
+                <RadzenDataGridColumn TItem="Order" Property="Status" Title="Статус" Sortable="true" Filterable="false" TextAlign="TextAlign.Center">
+                    <Template Context="entity">
+                        @Order.orderStatusTranslations[entity.Status.Value]
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Order" Title="Дата заказа" Sortable="false" Filterable="false">
+                    <Template Context="entity">
+                        <RadzenText TextStyle="TextStyle.Subtitle2" class="mb-0">
+                            @entity.OrderDate
+                        </RadzenText>
+                    </Template>
+                    <FooterTemplate>
+                        Последнее:<b>@string.Format("{0:d}", OrdersL.OrderByDescending(o => o.OrderDate).FirstOrDefault()?.OrderDate)</b>
+                    </FooterTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Order" Title="Дата завершения" Sortable="false" Filterable="false">
+                                    <Template Context="entity">
+                                        <RadzenText TextStyle="TextStyle.Subtitle2" class="mb-0">
+                                            @entity.CompletionDate
+                                        </RadzenText>
+                                    </Template>
+                                    <FooterTemplate>
+                                        Последнее:<b>@string.Format("{0:d}", OrdersL.OrderByDescending(o => o.CompletionDate).FirstOrDefault()?.CompletionDate)</b>
+                                    </FooterTemplate>
+                                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Order" Title="Создание" Sortable="false" Filterable="false">
+                    <Template Context="entity">
+                        <RadzenText TextStyle="TextStyle.Subtitle2" class="mb-0">
+                            @((entity.CreatedBy.HasValue && entity.CreatedBy.Value != 0 && CreatedByNames.TryGetValue(entity.CreatedBy.Value, out string createdByName)) ? createdByName : "Система")
+                        </RadzenText>
+                        <RadzenText TextStyle="TextStyle.Caption">@entity.CreatedDateTime</RadzenText>
+                    </Template>
+                    <FooterTemplate>
+                        Последнее:<b>@string.Format("{0:d}", OrdersL.OrderByDescending(o => o.CreatedDateTime).FirstOrDefault()?.CreatedDateTime)</b>
+                    </FooterTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Order" Title="Редактирование" Sortable="false" Filterable="false">
+                    <Template Context="entity">
+                        <RadzenText TextStyle="TextStyle.Subtitle2" class="mb-0">
+                            @((entity.UpdatedBy.HasValue && entity.UpdatedBy.Value != 0 && UpdatedByNames.TryGetValue(entity.UpdatedBy.Value, out string updatedByName)) ? updatedByName : "Система")
+                        </RadzenText>
+
+                        <RadzenText TextStyle="TextStyle.Caption">@entity.UpdatedDateTime</RadzenText>
+                    </Template>
+                    <FooterTemplate>
+                        Последнее:<b>@string.Format("{0:d}", OrdersL.OrderByDescending(o => o.UpdatedDateTime).FirstOrDefault()?.UpdatedDateTime)</b>
+                    </FooterTemplate>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </div>
+}
+
+@inject IOrderService OrderService
+@inject IUserService UserService
+
+@code {
+    private List<Order> OrdersL;
+    private Dictionary<int, string> CreatedByNames = new();
+    private Dictionary<int, string> UpdatedByNames = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        OrdersL = await OrderService.GetAllAsync();
+
+        var users = await UserService.GetUsers();
+        foreach (var user in users)
+        {
+            CreatedByNames[user.Id] = user.UserName;
+            UpdatedByNames[user.Id] = user.UserName;
+        }
+    }
+
+    private void Create()
+    {
+        NavigationManager.NavigateTo("/order/create");
+    }
+
+    private void Edit(int id)
+    {
+        NavigationManager.NavigateTo($"/order/update/{id}");
+    }
+
+    private async Task Delete(int id)
+    {
+        await OrderService.DeleteAsync(id);
+        OrdersL = await OrderService.GetAllAsync();
+    }
+
+}

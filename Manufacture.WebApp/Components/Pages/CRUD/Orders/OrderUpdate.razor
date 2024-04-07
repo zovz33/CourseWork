@@ -1,0 +1,178 @@
+    @page "/order/create"
+    @page "/order/update/{id:int?}" 
+    @using Manufacture.Core.Entities
+    @using Manufacture.BusinessLogic.Interfaces 
+    @inject IOrderService OrderService
+    @inject IOrderProductService OrderProductService
+    @inject NavigationManager NavigationManager
+    @rendermode @(new InteractiveServerRenderMode(false))
+    @attribute [StreamRendering]
+
+    @if (NavigationManager.Uri.Contains("/order/create"))
+    {
+        <PageTitle>Добавление заказа</PageTitle>
+        <h3>Добавление заказа</h3>
+    }
+    else
+    {
+        <PageTitle>Редактирование заказа</PageTitle>
+        <h3>Редактирование заказа</h3>
+    }
+
+    <NavLink class="btn " href="/orders">
+        <RadzenIcon Icon="keyboard_backspace" Style=".btn:hover {background-color: bisque;};align-items: center"/>
+    </NavLink>
+    @if (!string.IsNullOrEmpty(Message))
+    {
+        <RadzenAlert Shade="Shade.Lighter" AlertStyle=@(Message.Contains("Ошибка") ? AlertStyle.Danger : AlertStyle.Success) class="mt-4">@Message</RadzenAlert>
+    }
+    <RadzenTemplateForm Data="@CurrentEntity" Submit="@((Order args) => { Submit(args); })">
+        <RadzenRow Gap="2rem" Class="rz-p-0 rz-p-lg-4">
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenStack>
+                    <RadzenFieldset Text="Информация о роли">
+                        <RadzenStack Gap="1rem">
+                            <RadzenRow AlignItems="AlignItems.Center">
+                                <div>
+                                    <RadzenFormField Text="Выберите продукт, который хотите заказать" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                        <Start>
+                                            <RadzenIcon Icon="check"/>
+                                        </Start>
+                                        <ChildContent>
+                                            <RadzenDropDown TValue="int" @bind-Value="CurrentEntity.ProductToOrderId" Data="orderProduct" TextProperty="Name" ValueProperty="Id"/>
+                                        </ChildContent>
+                                    </RadzenFormField>
+                                </div>
+                                <div>
+                                    <RadzenFormField Text="Количество" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                        <Start>
+                                            <RadzenIcon Icon="123"/>
+                                        </Start>
+                                        <ChildContent>
+                                            <RadzenNumeric @bind-Value="CurrentEntity.Quantity"/>
+                                        </ChildContent>
+                                    </RadzenFormField>
+                                </div>
+                                <div>
+                                    <RadzenFormField Text="Статус" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                        <Start>
+                                            <RadzenIcon Icon="priority_high"/>
+                                        </Start>
+                                        <ChildContent>
+                                            <RadzenDropDown @bind-Value="CurrentEntity.Status" Data="@Order.orderStatusTranslations" TextProperty="Value" ValueProperty="Key"/>
+                                        </ChildContent>
+                                    </RadzenFormField>
+                                </div>
+                                <div>
+                                    <RadzenFormField Text="Дата заказа" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                        <Start>
+                                            <RadzenIcon Icon="calendar_month"/>
+                                        </Start>
+                                        <ChildContent>
+                                            <RadzenDatePicker @bind-Value="@CurrentEntity.OrderDate" DateFormat="MM/dd/yyyy" InitialViewDate="DateTime.Now" Min="DateTime.Today.AddYears(-5)" Max="DateTime.Today.AddYears(5)"/>
+                                        </ChildContent>
+                                    </RadzenFormField>
+                                </div>
+                                <div>
+                                    <RadzenFormField Text="Дата выполнения заказа" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                        <Start>
+                                            <RadzenIcon Icon="calendar_month"/>
+                                        </Start>
+                                        <ChildContent>
+                                            <RadzenDatePicker @bind-Value="@CurrentEntity.CompletionDate" DateFormat="MM/dd/yyyy" InitialViewDate="DateTime.Now" Min="DateTime.Today.AddYears(-5)" Max="DateTime.Today.AddYears(5)"/>
+                                        </ChildContent>
+                                    </RadzenFormField>
+                                </div>
+                            </RadzenRow>
+                        </RadzenStack>
+                    </RadzenFieldset>
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" Class="rz-mt-8 rz-mb-4">
+            <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Icon="save" Text="Сохранить"/>
+            <RadzenButton ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Large" Icon="cancel" Text="Отменить" Click="@Cancel"/>
+        </RadzenStack>
+    </RadzenTemplateForm>
+
+    @code {
+        [Parameter] public int? id { get; set; }
+        private string? Message;
+        private Order CurrentEntity { get; set; } = new Order();
+        private List<OrderStatus> orderStatuses;
+        private IEnumerable<ProductToOrder> orderProduct;
+
+        
+        
+        protected override async Task OnInitializedAsync()
+        {
+            if (id.HasValue)
+            {
+                CurrentEntity = await OrderService.GetByIdAsync(id.Value);
+            }
+
+            orderStatuses = Enum.GetValues<OrderStatus>().ToList();
+            orderProduct = await OrderProductService.GetAllAsync();
+        }
+
+        private async Task Submit(Order args)
+        {
+            if (args.ProductToOrderId <= 0)
+            {
+                Message = "Ошибка: Должен быть указан продукт, который мы будем производить.";
+                return;
+            }
+            if (!args.Status.HasValue)
+            {
+                Message = "Ошибка: Должен быть указан статус.";
+                return;
+            }
+            if (args.Quantity <= -1 || !args.Quantity.HasValue)
+            {
+                Message = "Ошибка: Должно быть указано количество продукции(положительное число или 0).";
+                return;
+            }
+            
+            try
+            {
+                if (args.CompletionDate.HasValue)
+                {
+                    CurrentEntity.CompletionDate = DateTime.SpecifyKind(CurrentEntity.CompletionDate.Value, DateTimeKind.Utc);
+                }
+                if (args.OrderDate.HasValue)
+                {
+                    CurrentEntity.OrderDate = DateTime.SpecifyKind(CurrentEntity.OrderDate.Value, DateTimeKind.Utc);
+                }
+                
+                if (!id.HasValue)
+                {
+                    await OrderService.AddAsync(CurrentEntity);
+                    Message = "Заказ успешно создан.";
+                }
+                else
+                {
+                    if (CurrentEntity != null)
+                    {
+                        await OrderService.UpdateAsync(CurrentEntity);
+                        Message = "Заказ успешно обновлен.";
+                    }
+                    else
+                    {
+                        Message = "Заказ не найден.";
+                    }
+                }
+
+                NavigationManager.NavigateTo("/orders");
+            }
+            catch (Exception ex)
+            {
+                Message = $"Произошла ошибка при обработке данных заказа. Попробуйте позже. Ошибка: {ex.Message}";
+            }
+        }
+
+        private void Cancel()
+        {
+            NavigationManager.NavigateTo("/orders");
+        }
+
+    }

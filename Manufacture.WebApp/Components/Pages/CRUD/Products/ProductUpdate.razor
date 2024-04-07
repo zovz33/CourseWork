@@ -1,0 +1,141 @@
+@page "/product/create"
+@page "/product/update/{id:int?}" 
+@using Manufacture.Core.Entities
+@using Manufacture.BusinessLogic.Interfaces
+@inject IProductService ProductService
+@inject IOrderProductService OrderProductService
+@inject NavigationManager NavigationManager
+@rendermode @(new InteractiveServerRenderMode(false))
+@attribute [StreamRendering]
+
+@if (NavigationManager.Uri.Contains("/product/create"))
+{
+    <PageTitle>Добавление продукта на складе</PageTitle>
+    <h3>Добавление продукта на складе</h3>
+}
+else
+{
+    <PageTitle>Редактирование продукта на складе</PageTitle>
+    <h3>Редактирование продукта на складе</h3>
+}
+
+<NavLink class="btn " href="/products">
+    <RadzenIcon Icon="keyboard_backspace" Style=".btn:hover {background-color: bisque;};align-items: center"/>
+</NavLink>
+@if (!string.IsNullOrEmpty(Message))
+{
+    <RadzenAlert Shade="Shade.Lighter" AlertStyle=@(Message.Contains("Ошибка") ? AlertStyle.Danger : AlertStyle.Success) class="mt-4">@Message</RadzenAlert>
+}
+<RadzenTemplateForm Data="@CurrentEntity" Submit="@((Product args) => { Submit(args); })">
+    <RadzenRow Gap="2rem" Class="rz-p-0 rz-p-lg-4">
+        <RadzenColumn Size="12" SizeMD="6">
+            <RadzenStack>
+                <RadzenFieldset Text="Информация о роли">
+                    <RadzenStack Gap="1rem">
+                        <RadzenRow AlignItems="AlignItems.Center">
+                            <div>
+                                <RadzenFormField Text="Выберите продукцию завода" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="check"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenDropDown TValue="int?" @bind-Value="CurrentEntity.ProductToOrderId" Data="productToOrders" TextProperty="Name" ValueProperty="Id" />
+                                    </ChildContent>
+                                </RadzenFormField>
+                            </div>
+                            <div>
+                                <RadzenFormField Text="Количество" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="123"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenNumeric @bind-Value="CurrentEntity.Amount"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                            </div>
+                            <div>
+                                <RadzenFormField Text="Цена" Variant="Variant.Outlined" Style="width: 750px; margin: 5px 0;">
+                                    <Start>
+                                        <RadzenIcon Icon="currency_ruble"/>
+                                    </Start>
+                                    <ChildContent>
+                                        <RadzenNumeric @bind-Value="CurrentEntity.Price"/>
+                                    </ChildContent>
+                                </RadzenFormField>
+                            </div>
+                        </RadzenRow>
+                    </RadzenStack>
+                </RadzenFieldset>
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" Class="rz-mt-8 rz-mb-4">
+        <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Icon="save" Text="Сохранить"/>
+        <RadzenButton ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Large" Icon="cancel" Text="Отменить" Click="@Cancel"/>
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? id { get; set; }
+    private string? Message;
+    private Product CurrentEntity { get; set; } = new Product();
+
+    private IEnumerable<ProductToOrder> productToOrders;
+    protected override async Task OnInitializedAsync()
+    {
+        if (id.HasValue)
+        {
+            CurrentEntity = await ProductService.GetByIdAsync(id.Value);
+        }
+
+        productToOrders = await OrderProductService.GetAllAsync();
+    }
+
+    private async Task Submit(Product args)
+    {
+        if (args.Amount <= -1 || !args.Amount.HasValue)
+        {
+            Message = "Ошибка: Должно быть указано количество продукции(положительное число или 0).";
+            return;
+        }
+
+        if (args.Price <= -1 || !args.Price.HasValue)
+        {
+            Message = "Ошибка: Должна быть указана цена(положительное число или 0).";
+            return;
+        }
+
+        try
+        {
+            if (!id.HasValue)
+            {
+                await ProductService.AddAsync(CurrentEntity);
+                Message = "Материал успешно создан.";
+            }
+            else
+            {
+                if (CurrentEntity != null)
+                {
+                    await ProductService.UpdateAsync(CurrentEntity);
+                    Message = "Материал успешно обновлен.";
+                }
+                else
+                {
+                    Message = "Материал не найден.";
+                }
+            }
+
+            NavigationManager.NavigateTo("/products");
+        }
+        catch (Exception ex)
+        {
+            Message = $"Произошла ошибка при обработке данных роли. Попробуйте позже. Ошибка: {ex.Message}";
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/products");
+    }
+
+}

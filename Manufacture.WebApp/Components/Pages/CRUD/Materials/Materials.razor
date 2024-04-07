@@ -40,10 +40,14 @@ else
                         </Template>
                     </RadzenDataGridColumn>
                     <RadzenDataGridColumn TItem="RawMaterial" Property="Name" Title="Название" TextAlign="TextAlign.Center"/>
-                    <RadzenDataGridColumn TItem="RawMaterial" Property="Quantity" Title="Количество" Sortable="true" Filterable="false" TextAlign="TextAlign.Center"/>
+                    <RadzenDataGridColumn TItem="RawMaterial" Property="Quantity" Title="Количество" Sortable="true" Filterable="false" TextAlign="TextAlign.Center">
+                        <Template Context="entity">
+                                                    @($"{entity.Quantity} кг.")
+                                                </Template> 
+                    </RadzenDataGridColumn>
                     <RadzenDataGridColumn TItem="RawMaterial" Property="Price" Title="Цена за кило" Sortable="true" Filterable="false" TextAlign="TextAlign.Center">
-                        <Template Context="data">
-                            @($"{data.Price} ₽")
+                        <Template Context="entity">
+                            @($"{entity.Price} ₽")
                         </Template>
                     </RadzenDataGridColumn>
                     <RadzenDataGridColumn TItem="RawMaterial" Title="Создание" Sortable="false" Filterable="false">
